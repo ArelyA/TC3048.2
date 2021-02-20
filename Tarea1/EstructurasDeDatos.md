@@ -10,11 +10,20 @@ Repository with implementations available [here](https://github.com/ArelyA/TC304
 
 ## Stack
 ### Basic Methods
-* empty() --> None
-	Returns whether the stack is empty.
+* Stack(element) --> Stack
+	Creates a new stack. If element is not iterable, the stack will not be created and a TypeError will be thrown. If there are no elements specified, then an empty Stack will be created.
 ```python
 stack = Stack(["Eric", "John", "Michael"])
 empty_stack = Stack()
+print(stack)
+>>['Eric', 'John','Michael']
+print(empty_stack)
+>> []
+```
+
+* empty() --> None
+	Returns whether the stack is empty.
+```python
 print(stack.empty())
 >> True
 print(empty_stack.empty())
@@ -61,6 +70,17 @@ print(stack)
 Stack implementation using list container.
 ## Queue
 ### Basic Methods
+* Queue(element) --> Queue
+	Creates a new queue. If element is not iterable, the queue will not be created and a TypeError will be thrown. If there are no elements specified, then an empty queue will be created.
+```python
+queue = Queue(["Eric", "John", "Michael"])
+empty_queue = Stack()
+print(queue)
+>>['Eric', 'John','Michael']
+print(empty_queue)
+>> []
+```
+
 * empty() --> None
 	Returns whether the stack is empty.
 ```python

@@ -15,6 +15,7 @@ File with all the sample code available [here](https://github.com/ArelyA/TC3048.
 ## Stack
 ### Basic Methods
 * Stack(element) --> Stack
+
 	Creates a new stack. If element is not iterable, the stack will not be created and a TypeError will be thrown. If there are no elements specified, then an empty Stack will be created.
 ```python
 stack = Stack(["Eric", "John", "Michael"])

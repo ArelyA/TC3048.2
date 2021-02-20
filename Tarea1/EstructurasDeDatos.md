@@ -1,3 +1,5 @@
+<div style="text-align: right"> by Arely Aceves Compean </div>
+
 # Data Structures
 
 * [Stack](#Stack)

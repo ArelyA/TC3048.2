@@ -172,7 +172,7 @@ dictionary_constr = dict(one=1, two=2, three=3)
 print(dictionary_constr)
 >> {'one': 1, 'two': 2, 'three': 3}
 ```
-* d[key]
+* d[key] --> Object
 Returns dictionary value of item at key.
 ```python
 print(dictionary['one'])
@@ -187,7 +187,7 @@ print(dictionary['one'])
 >> 11
 ```
 
-* setsefault(key, default)
+* setsefault(key, default) --> Object
 Returns the value of the item with the specified key, if it does not exists, this item is added with the specified default value. If there is no default,  its value is set to None.
 ```python
 element = dictionary.setdefault('four', 4)
@@ -198,7 +198,7 @@ print(element)
 >> None
 ```
 
-* key in d
+* key in d --> bool
 Returns whether a key exists in the dictionary.
 ```python
 print('six' in dictionary)
@@ -207,7 +207,7 @@ print('two' in dictionary)
 >> True
 ```
 
-* key not in d
+* key not in d --> bool
 Returns whether a key does not exist in the dictionary. Equivalent to not key in d.
 ```python
 print('six' not in dictionary)
@@ -220,27 +220,27 @@ print(not 'two' in dictionary)
 >> False
 ```
 
-* keys()
+* keys() --> dict view
 Returns a view of all the keys in the dictionary.
 ```python
 print(dictionary.keys())
 >> dict_keys(['one', 'two', 'three', 'four', 'five'])
 ```
 
-* list(d)
+* list(d) --> list
 Returns a list of
 ```python
 print(list(dictionary))
 >> ['one', 'two', 'three', 'four', 'five']
 ```
-* values()
+* values() --> dict view
 Returns a view of all the values in the dictionary.
 ```python
 print(dictionary.values())
 >> dict_values([1, 2, 3, 4, None])
 ```
 
-* get(key, default)
+* get(key, default) --> Object
 Returns the value of the item with the specified key, if it does not exists the specified default value is returned. If there is no default value it returns None.
 ```python
 element = dictionary.get('four', 6)
@@ -254,7 +254,7 @@ print(element)
 >> None
 ```
 
-* pop(key)
+* pop(key) --> Object
 Removes and returns the value of the item with the specified key, if it does not exists the specified default value is returned. If there is no default value, a KeyError is raised.
 ```python
 element = dictionary.pop('four', 6)
@@ -272,7 +272,7 @@ except KeyError:
 >> <class 'KeyError'>
 ```
 
-* del d[key]
+* del d[key] --> None
 Removes item at key. Raises a KeyError if key does not exist.
 ```python
 del dictionary['five']
@@ -285,21 +285,27 @@ except KeyError:
 >> <class 'KeyError'>
 ```
 
-* update(d2)
+* update(d2) --> None
 Updates the dictionary with the keys and values of d2, giving priority to d2.
 ```python
 dictionary.update({'four': 1, 'five': 2, 'six': 3})
 print(dictionary)
 >> {'one': 1, 'two': 2, 'three': 3, 'four': 1, 'five': 2, 'six': 3}
 ```
+* len(d) --> int
+Returns number of elements in the dictionary.
+```python
+print(len(dictionary))
+>> 6
+```
 
 * clear() --> None
-	Removes all the items from the stack.
+	Removes all the items from the dictionary.
 ```python
 dictionary.clear()
 print(dictionary)
->>[]
+>> {}
 ```
 
 ### Implementation
-Dictionary implementation using dict container. shown in previous code example.
+Dictionary implementation using dict container shown in previous code examples.

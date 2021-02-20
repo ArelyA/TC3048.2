@@ -172,3 +172,10 @@ except KeyError:
 dictionary.update({'four': 1, 'five': 2, 'six': 3})
 print(dictionary)
 #>> {'one': 1, 'two': 2, 'three': 3, 'four': 1, 'five': 2, 'six': 3}
+
+print(len(dictionary))
+#>> 6
+
+dictionary.clear()
+print(dictionary)
+#>> {}

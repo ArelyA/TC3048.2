@@ -4,11 +4,11 @@
 ## *Contents*
 
 * [Diagrams](#Diagrams)
-* [Regular Expressions](#Regular_Expressions)
+* [Regular Expressions](#Regular-Expressions)
 * [Grammar](#Grammar)
 * [Code](#Code)
-* [Test Cases](#Test_Cases)
-* [Compilation Results](#Compilation_Results)
+* [Test Cases](#Test-Cases)
+* [Compilation Results](#Compilation-Results)
 
 ## Diagrams
 
@@ -42,7 +42,7 @@
 | cte_f         | cte f                                              |
 | ε             |                                                    |
 
-[back to top](#Little_Duck_2020)
+[back to top](#Little-Duck-2020)
 
 ## Grammar
 
@@ -110,12 +110,12 @@ ASIGNACION -> id Sym_Equal EXPRESION Sym_Semicolon
 
 ​             VAR_CTE -> id | cte_l | cte_f
 
-[back to top](#Little_Duck_2020)
+[back to top](#Little-Duck-2020)
 
 ## Code
 TBD
 
-[back to top](#Little_Duck_2020)
+[back to top](#Little-Duck-2020)
 
 ## Test Cases
 TBD
@@ -125,4 +125,4 @@ TBD
 ## Compilation Results
 TBD
 
-[back to top](#Little_Duck_2020)
+[back to top](#Little-Duck-2020)

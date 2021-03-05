@@ -12,7 +12,7 @@
 
 ## Diagrams
 
-![](C:\Users\Arely\Desktop\TEC\Compiladores\TC3048.2\Tarea3\LittleDuck.png)
+![](LittleDuck.png)
 
 ## Regular Expressions
 

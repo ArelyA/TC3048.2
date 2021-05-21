@@ -1,6 +1,11 @@
-# Stack implementation using list container
+from collections import deque
 
-class Stack(list):
+class Stack(deque):
+    """Stack implementation using deque container from the collections module"""
+    def __init__(self, name):
+        self.name = name
+    def __repr__(self):
+        return self.name + " [" + ", ".join(repr(item) for item in self)  + "]"
     def empty(self):
         """
         Returns whether the stack is empty
@@ -26,4 +31,11 @@ class Stack(list):
             else:
                 # iterable
                 self.extend(x)
-
+    def top(self):
+        """
+        Returns the last element in the stack
+        """
+        if(self.size() > 1):
+            return self[-1]
+        else:
+            return self[0]

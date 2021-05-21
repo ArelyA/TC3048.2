@@ -1,5 +1,3 @@
-// REGRESAR A COUNT ORIGINAL
-// CORREGIR EXPRESIONES -> Ver ms de Federico
 start: (stmt)*
 ?stmt: asign
   | if_else
@@ -16,13 +14,15 @@ call_func_opt: expresion
 block: ("\t"* "\t" stmt "\t"*)+
 ?asign: asign_simp
   | asign_item
-asign_simp: ID EQUAL asign_simp_opt -> asign_simp_func
+asign_simp: ID "=" asign_simp_opt -> asign_simp_func
 ?asign_simp_opt: var_it
   | expresion
   | var_str
-asign_item: ID "[" expresion "]" EQUAL asign_item_opt -> asign_item_func
+  | call_func
+asign_item: ID "[" expresion "]" "=" asign_item_opt -> asign_item_func
 asign_item_opt: expresion
-  |var_str
+  | var_str
+  | call_func
 if_else: "if" "(" expresion ")" ":" block ["else" ":" block]
 print: "print" "(" print_opt ("," print_opt)* ")"
 print_opt: var_str
@@ -34,42 +34,48 @@ read: "read" "(" ID ["," read_opt] ")"
 while: "while" "(" expresion ")" ":" block
 for: "for" ID "in" for_opt ":" block
 for_opt: var_it_ext
-def_func: "def" ID "(" ID ("," ID)* ")" ":" block ["return" def_func_opt]
+def_func: "def" def_func_name "(" def_func_param ("," def_func_param)* ")" ":" block ["return" def_func_opt def_func_type] 
+def_func_name: ID -> def_func_name
+def_func_param: ID -> def_func_param
+def_func_type: -> def_func_type
 def_func_opt: expresion
   | var_str
   | var_it
 func_cte: len
   | count
   | size
-len: "len" "(" len_opt ")"
+len: "len(" len_opt ")"
 len_opt: var_it
   | var_str
-count: "count"  "(" var_it_ext "," count_opt ")"
+count: var_it_ext ".count(" count_opt ")"
 count_opt: var_str
   | expresion
-size: "size" "(" CTE_FILE ")"
+size: "size(" CTE_FILE ")"
 func_str: substr
   | join
   | find
   | norm
   | clean
 substr: var_str_ext "[" expresion ":" expresion "]"
-join: var_str_ext ".join" "(" var_str ")"
-find: var_str_ext ".find" "(" var_str ")"
-clean: var_str_ext ".clean" "(" ")"
-norm: var_str_ext ".norm" "(" var_str ")"
-?var_cte: ID
-  | CTE_INT
-  | CTE_FLOAT
+join: var_str_ext ".join(" var_it ")"
+find: var_str_ext ".find(" var_str ")"
+clean: opts ".clean(" ")"
+norm: opts ".norm(" var_str ")"
+opts: var_str_ext | cte_file
+?var_cte: CTE_INT -> int_func
+  | CTE_FLOAT -> float_func
+  | CTE_BOOL -> bool_func
+  | ID
   | ID "[" expresion "]"
   | func_cte
 ?var_it: func_it
-  | "[" var_it_opt (var_it_opt)* "]"
+  | cte_file
+  | "[" var_it_opt ("," var_it_opt)* "]"
+?cte_file: CTE_FILE -> file_func
 ?var_it_opt: expresion
   | var_str
-?var_str: CTE_STRING
+?var_str: CTE_STRING -> string_func
   | func_str
-  | CTE_FILE
 ?var_str_ext: var_str
   | ID
 ?var_it_ext: var_it
@@ -80,41 +86,66 @@ func_it: range
   | bigrams
   | ngrams
   | set
-tokenize: var_str_ext "." "tokenize" "(" tokenize_opt? ")"
+tokenize: var_str_ext ".tokenize(" tokenize_opt? ")"
 !tokenize_opt: "word"
   | "sentence"
-unigrams: var_str_ext "." "unigrams" "(" ")"
-bigrams: var_str_ext "." "bigrams" "(" ")"
-ngrams: var_str_ext "." "ngrams" "(" expresion ")"
-range: "range" "(" expresion ("," expresion)~0..2 ")"
-set: var_str_ext "." "set" "(" ")"
-expresion: ass [EXPRESION_OPT ass]
-EXPRESION_OPT: "and"
-  | "or"
-?ass: NOT? comp
+unigrams: var_str_ext ".unigrams(" ")"
+bigrams: var_str_ext ".bigrams(" ")"
+ngrams: var_str_ext ".ngrams(" expresion ")"
+range: "range(" expresion ("," expresion)~0..2 ")"
+set: var_str_ext ".set(" ")"
+?expresion: expresion_and or_func (or_func_op expresion_and or_func)*
+?expresion_and: ass and_func (and_func_op ass and_func)*
+and_func_op: EXPRESION_AND -> and_func_op
+and_func: -> and_func
+or_func_op: EXPRESION_OR -> or_func_op
+not_func: -> not_func
+or_func: -> or_func
+EXPRESION_AND: "and"
+EXPRESION_OR: "or"
+?ass: comp not_func
+  | not_func_op comp not_func
 NOT: "not"
-?comp: exp [COMP_OPT exp]
+not_func_op: NOT -> not_func_op
+comp: exp comp_func [comp_func_op exp comp_func]
+comp_func_op: COMP_OPT -> comp_func_op
+comp_func: -> comp_func
 COMP_OPT: ">"
   | ">="
   | "<"
   | "<="
   | "=="
   | "!="
-?exp: term (EXP_OPT term)*
+exp: term exp_func
+  | term exp_func exp_opt exp
+exp_opt: EXP_OPT  -> exp_func_op
+exp_func: -> exp_func
 EXP_OPT: "+"
   | "-"
-?term: factor (TERM_OPT factor)*
-TERM_OPT: "*" | "/"
-?factor: "(" expresion ")"
-  | [FACTOR_OPT] var_cte -> factor_func
-FACTOR_OPT: "+" | "-" 
-EQUAL: "="
-CTE_FILE: /(\.{0,2}\/){0,1}[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\.txt/
+term: factor term_func
+  | factor term_func term_opt term 
+term_opt: TERM_OPT -> term_func_op
+term_func: -> term_func
+TERM_OPT: "*" | "/" 
+factor: "(" factor_paren expresion ")" factor_paren_end
+  | var_cte
+factor_paren: -> factor_paren
+factor_paren_end: -> factor_paren_end
+CTE_BOOL.6: "True"  | "False" // BOOL terminal
+CTE_FILE: /(\.{0,2}\/){0,1}[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\./ (/txt/ | /html/ | /htm/)~1
 // imports from terminal library
 %import common.CNAME -> ID // ID terminal
 %import common.ESCAPED_STRING -> CTE_STRING // STRING terminal
-%import common.INT -> CTE_INT // INT terminal
-%import common.FLOAT -> CTE_FLOAT //FLOAT terminal
+%import common.SIGNED_INT -> CTE_INT // INT terminal
+%import common.SIGNED_FLOAT -> CTE_FLOAT //FLOAT terminal
+%import common.SH_COMMENT
+%import common.CPP_COMMENT
+%import common.C_COMMENT
+
 WHITESPACE: /[ \f\r\n]/+
+
 %ignore WHITESPACE // Disregard spaces in text
+%ignore SH_COMMENT
+%ignore  CPP_COMMENT
+%ignore  C_COMMENT
   

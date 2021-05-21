@@ -1,7 +1,11 @@
-# Queue implementation using deque container from the collections module
 from collections import deque
 
 class Queue(deque):
+    """Queue implementation using deque container from the collections module"""
+    def __init__(self, name):
+        self.name = name
+    def __repr__(self):
+        return self.name + " [" + ", ".join(repr(item) for item in self)  + "]"
     def empty(self):
         """
         Returns whether the queue is empty
@@ -29,7 +33,12 @@ class Queue(deque):
                 self.extend(x)
     def pop(self):
         """
-        Returns the first element in the queue
+        Returns and removes the first element in the queue
         """
         return self.popleft()
+    def top(self):
+        """
+        Returns the first element in the queue
+        """
+        return self[0]
 

@@ -1,16 +1,24 @@
-/*a = "Hola" //String
+a = "Hola"
 b = True
 c = -1
-d = 1
-c = d
+d = [1, 2, 6]
+m = d
 e = 1.5
 f = ./folder/file.txt
-g = file.html
-h = file.html*/
 
-i = 3.5 * (3 + 2) / 5 - 2 * -1
-b = not True
-a = True and False
-c = True or False
-d = 1 == 2 and False != True
+c = d
+/*
 g = file.html
+h = file.html
+*/
+i = 3.5 * (3 + 2) / 5 - 2 * -1
+
+b = not True
+
+j = True and False
+k = True or False
+j = 1 == 2 and False != True
+// l = 1 - True
+/*
+g = file.html
+*/

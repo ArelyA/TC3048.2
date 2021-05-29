@@ -10,8 +10,11 @@ class Quad(object):
     self.left = left
     self.right = right
     self.dest = dest
+
   def reprQ(self, l):
-    return "{:^4}".format(self.op) +  " | " + "".join(["{:^", str(l),"}"]).format(self.left) + " | " + "".join(["{:^", str(l),"}"]).format(self.right) + " | " + "{:^10}".format(id(self.dest))
+    #print(l)
+    return "".join(["{:^", str(l),"}"]).format(self.op) +  " | " + "".join(["{:^", str(l),"}"]).format(str(self.left)) + " | " + "".join(["{:^", str(l),"}"]).format(str(self.right)) + " | " + "".join(["{:^", str(l),"}"]).format(str(self.dest))
+
   def __len__(self):
-    return max(len(str(self.left)), len(str(self.right)))
+    return max(len(str(self.op)), len(str(self.left)), len(str(self.right)), len(str(self.dest)))
   

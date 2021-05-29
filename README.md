@@ -67,12 +67,9 @@ Funciones especiales:
 | func_count   | count     | recibe un string a buscar y regresa las veces que este se repite |
 | func_size    | size      | regresa el tamaño del archivo (nivel palabra)                |
 | func_pos     | POS       | regresa el part-of-speech de cada token (nivel palabra)      |
-| func_lemm    | lemmatize | regresa los tokens (nivel palabra) lematizados               |
-| func_stem    | stem      | regresa la raíz de cada token (nivel palabra)                |
 | func_tok     | tokenize  | regresa el archivo separado en tokens, ya sea por oración o por palabra. TBD |
 | func_norm    | normalize | pasa todas las letras a minúsculas y remueve todos los símbolos, la lista de símbolos a remover se puede ser definida por el usuario. Símbolos base = Todo excepto puntos, números y espacios |
-| func_clean   | clean     | remueve HTML y regresa el texto limpio                       |
-| func_NER     | NER       | regresa el name entity relation de cada token (nivel palabra) |
+| func_clean   | clean     | remueve HTML y regresa el texto limpio                       |	
 | func_unigram | unigram   | regresa las veces que se repite cada palabra                 |
 | func_bigram  | bigram    | regresa las veces que aparece un par de palabras consecutivas |
 | func_ngram   | ngram     | regresa las veces que aparece un conjunto de n palabras consecutivas |
@@ -96,3 +93,11 @@ Funciones especiales:
 ### Notas (15.05.2021)
 * Se generaron los diagramas necesarios y se refactorizaron las Funciones (Pendiente hacer los cambios en este documento). https://lucid.app/lucidchart/invitations/accept/inv_92f1d942-4b56-487e-a7c5-0b062013fd72
 * Se comenzó a planear el lexer y parser con sus respectivos puntos neurálgicos.
+### Notas (25.05.2021)
+* Se terminaron parser y lexer
+* Se empezaron a agregar y desarrollar puntos neurálgicos
+* Se tiene una primera versión para estructuras de tablas de funciones y de variables
+* Se creó el cubo semántico para operaciones básicas
+* Se crearon funciones para operaciones básicas
+* Se comenzó a generar cuádruplos
+* Se comenzó a generar las estructuras para memoria

@@ -21,6 +21,8 @@ tree = l.parse(code)
 print( tree )
 
 print(compiler.operadores, compiler.operandos, compiler.tipos, compiler.funciones, compiler.cuadruplos, sep='\n')
+with open("memory_log.txt", 'w') as f:
+  print(compiler.memory, file = f)
 # MVP
 # Create Machine class
 # Add Run method that receives file

@@ -16,30 +16,30 @@ def convert(var, type):
     return str(var)
 
 def compareFilesSize(left, right, op):
-  """Compare sizes for >, >=, <, <="""
+  """FILE FILE Compare sizes for >, >=, <, <="""
   return evaluate(os.path.getsize(left), os.path.getsize(right), op)
 
 def compareFilesContent(left, right, op):
-  """Compares file content similarity for ==, !="""
+  """FILE FILE Compares file content similarity for ==, !="""
   if(op == '=='):
     return filecmp.cmp(left, right)
   else:
     return not filecmp.cmp(left, right)
 
 def compareArray(left, right, op):
-  """Compare array lengths for >, >=, <, <="""
+  """ARR ARR Compare array lengths for >, >=, <, <="""
   return evaluate(len(left), len(right), op)
 
 def compareString(left, right, op):
-  """Compare string lengths for >, >=, <, <="""
+  """STR STR Compare string lengths for >, >=, <, <="""
   return evaluate(len(left), len(right), op)
 
 def removeStrfromStr(left, right):
-  """Removes all occurrences of right string from left string"""
+  """STR STR Removes all occurrences of right string from left string"""
   return left.replace(right)
 
-def tempName(file, count = ""):
-  """Generates temp name to avoid overwriting"""
+def _tempName(file, count = ""):
+  """HELPER Generates temp name to avoid overwriting"""
   temp = "temp"
   filename, file_extension = os.path.splitext(file)
   try:
@@ -48,16 +48,19 @@ def tempName(file, count = ""):
   except:
     filename_temp = temp + count + "_" + filename + file_extension
   return filename_temp
-
-def removeStrfromFile(file, string):
-  """Removes a string from a file. Original file is altered."""
+def tempName(file):
+  """Generates temp name to avoid overwriting"""
   temp_count = 0
-  filename_temp = tempName(file)
+  filename_temp = _tempName(file)
 
   while os.path.isfile(filename_temp):
     #File does not exist
     temp_count += 1
-    filename_temp = tempName(file, str(temp_count))
+    filename_temp = _tempName(file, str(temp_count))
+
+def removeStrfromFile(file, string):
+  """FILE STR Removes a string from a file. Original file is altered."""
+  filename_temp = tempName(file)
 
   with open(file) as fin, open(filename_temp, "w+") as fout:
     for line in fin:
@@ -76,7 +79,7 @@ def appendFile(fileFrom, fileTo):
   with open(fileFrom) as fin, open(fileTo, "a+") as fout:
     for line in fin:
       fout.write(line)
-      
+
 def appendStrtoFile(file, string):
   """Appends a string to the end of a file"""
   with open(file, "a+") as fout:

@@ -2,8 +2,27 @@ import os
 import filecmp
 import shutil
 import operator
+from io import StringIO
+from html.parser import HTMLParser
 
 ops = { "or": operator.or_, "and": operator.and_, "not": operator.not_, "<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne, "+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.reset()
+        self.strict = False
+        self.convert_charrefs= True
+        self.text = StringIO()
+    def handle_data(self, d):
+        self.text.write(d)
+    def get_data(self):
+        return self.text.getvalue()
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 def convert(var, type):
   if(type == 'CTE_INT'):

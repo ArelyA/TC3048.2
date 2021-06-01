@@ -1,54 +1,54 @@
-start: (stmt_ext)*
+start: (stmt_ext)* end_prog
+end_prog: -> end_prog
 
 // Functions can only be defined in the global context
 stmt_ext: stmt
-  | def_func
+  | def_func // TODO
 
 // Functions that can be declared within an stmt block
 ?stmt: asign
-  | if_else
-  | print
-  | for
-  | while
-  | read
-  | call_func
-  | write
+  | if_else // TODO
+  | print // TODO
+  | for // TODO
+  | while // TODO
+  | read // TODO
+  | call_func // TODO
+  | write // TODO
 
 // Stmt block defined with proper indentation
 block: ("\t" stmt)+
 
 // Assignment
-?asign: asign_simp
-  | asign_item
+?asign: asign_simp // DONE
+  | asign_item // DONE
 
 // Simple
-asign_simp: id "=" asign_simp_opt 
-asign_simp_func: -> asign_simp_func
-?asign_simp_opt: var_it // TODO
+asign_simp: id asign_op asign_simp_opt 
+?asign_simp_func: -> asign_simp_func
+?asign_simp_opt: var_it // TODO - func_it
   | expresion asign_simp_func
-  | var_str asign_simp_func
-  | cte_file asign_simp_func
+  | call_func // TODO
+!asign_op: "=" -> asign_op
+// Item
+asign_item: id "[" expresion asign_item_index asign_op asign_item_opt 
+asign_item_func: -> asign_item_func
+asign_item_index: "]" -> asign_item_index
+asign_item_opt: expresion asign_item_func
   | call_func // TODO
 
-// Item
-asign_item: id "[" put_fondo expresion "]" asign_item_func "=" asign_item_opt asign_simp_func
-asign_item_func: -> asign_item_func
-asign_item_opt: expresion
-  | var_str
-  | call_func
-  | cte_file
 
 
-call_func: ID "(" call_func_opt ("," call_func_opt)* ")" // Si existe y tiene tipo de retorno Crea una variable de nombre idFunc
+call_func: call_func_name "(" call_func_opt ("," call_func_opt)* call_func_param // Si existe y tiene tipo de retorno Crea una variable de nombre idFunc
 call_func_opt: expresion
-  | func_str
   | func_it
 
-print: "print" "(" put_fondo print_opt ("," print_opt)* ")" print_func // poppea mientras no sea fondo (
-put_fondo: -> put_fondo
+call_func_name: ID -> call_func_name // ADD TOPE
+cal_func_param: ")" -> call_func_param
+print: "print" put_fondo print_opt ("," print_opt)* ")" print_func
+!put_fondo: "(" -> put_fondo
 print_func: -> print_func
-print_opt: var_str
-  | expresion
+print_opt: expresion
+  | var_it
 
 write: write_opt ".write" "(" write_opt ")"
 // Copia del primer archivo al segundo y si el izq es temp lo borra 
@@ -63,81 +63,97 @@ read: "read" "(" id ["," read_opt] ")" // If operando.top == int, float, string 
   | "file"
 
 
-if_else: "if" "(" expresion ")" ":" block ["else" ":" block]
+if_else: "if" expresion if_func block [else_func ":" block] endif
+!if_func: ":" -> if_func // DONE
+!else_func: "else" -> else_func // DONE
+endif: -> endif // DONE
 
-while: "while" "(" expresion ")" ":" block
-for: "for" id "in" for_opt check_it ":" block
-//id_for: ID -> id_for // Si ya existe la usa y si no la agrega
-check_it: -> check_it // Revisa que la variable que se usa es iterativa
+while: "while" while_func expresion while_cond block while_end
+while_func: -> while_func // DONE
+while_cond: ":" -> while_cond // DONE
+while_end: -> while_end // DONE
+
+for: "for" id "in" for_opt for_check block for_end
+for_check: ":" -> for_check // DONE
+for_end: -> for_end // DONE
 for_opt: var_it_ext
+  | range // Tipo INT
+  
 
-def_func: "def" def_func_name "(" [def_func_param ("," def_func_param)*] ")" ":" block ["return" def_func_opt def_func_type] 
-def_func_name: ID -> def_func_name //Revisar si existe
-def_func_param: ID -> def_func_param //Aqui también
-def_func_type: -> def_func_type
+def_func: "def" def_func_name "(" [def_func_param ("," def_func_param)*] ")" ":" block [RETURN def_func_opt def_func_type] def_func_end
+RETURN.10: "\t" "return"
+def_func_name: ID -> def_func_name // DONE
+def_func_param: ID -> def_func_param_func // DONE
+  | id "[" cte_int def_func_param_it // DONE
+!def_func_param_it: "]" -> def_func_param_it // DONE
+def_func_type: -> def_func_type // DONE
+def_func_end: -> def_func_end // DONE
 def_func_opt: expresion
-  | var_str
   | var_it
-
 
 func_cte: len
   | count
   | size
+  | find
 len: "len(" len_opt ")"
 len_opt: var_it
   | var_str
 count: var_it_ext ".count(" count_opt ")"
-count_opt: var_str
-  | expresion
+count_opt: expresion
+//  | var_str
 size: "size(" CTE_FILE ")"
+find: var_str_ext ".find(" var_str_ext ")"
 
 func_str: substr
   | join
-  | find
   | norm
   | clean
 substr: var_str_ext "[" expresion ":" expresion "]"
 join: var_str_ext ".join(" var_it ")"
-find: var_str_ext ".find(" var_str ")"
 clean: opts ".clean(" ")"
 norm: opts ".norm(" var_str ")"
 opts: var_str_ext | cte_file
+
 ?var_cte: CTE_INT -> int_func
   | CTE_FLOAT -> float_func
   | CTE_BOOL -> bool_func
+  | cte_file
   | id
-  | id "[" expresion "]" // Punto, saca 2 operandos
+  | id "[" expresion asign_item_index
   | func_cte
-?var_it: func_it
-  | "[" var_it_fondo var_it_opt ("," var_it_opt)* "]" var_it_asign
-var_it_fondo: -> var_it_fondo // agrega fondo falso
-var_it_asign: -> var_it_asign // is left tipo ID crea var y genera arreglo, else crea varTemp y genera arreglo
+  | var_str
+  
+cte_int: CTE_INT -> cte_int
+?var_it: func_it // TODO - IF ASIGN (OP == '=') DO SMTHN ELSE DO NOTHING
+  | "[" var_it_fondo var_it_opt ("," var_it_opt)* var_it_asign
+
+var_it_fondo: -> var_it_fondo 
+!var_it_asign: "]" -> var_it_asign 
+
 ?cte_file: CTE_FILE -> file_func
 ?var_it_opt: expresion
-  | var_str
+//  | var_str
+
 ?var_str: CTE_STRING -> string_func
-  | func_str
+  | func_str // TODO
+
 ?var_str_ext: var_str
   | id
 ?var_it_ext: var_it
   | id
 id: ID -> id_func
 
-func_it: range
-  | tokenize
-  | unigrams
-  | bigrams
-  | ngrams
-  | set
-tokenize: var_str_ext ".tokenize(" tokenize_opt? ")"
-!tokenize_opt: "word"
-  | "sentence"
-unigrams: var_str_ext ".unigrams(" ")"
-bigrams: var_str_ext ".bigrams(" ")"
-ngrams: var_str_ext ".ngrams(" expresion ")"
+func_it: set
+  | getline
+  | getword
+  | append
 range: "range(" expresion ("," expresion)~0..2 ")"
-set: var_it_ext ".set(" ")"
+set: var_it_ext ".set(" ")" // ASIGNA EN NUEVA VARIABLE
+getline: cte_file "." "getLine" "(" expresion ")"
+getword: cte_file "." "getWord" "(" expresion ")"
+append: "append" "(" var_it_ext "," var_it_ext ")"
 
+// DONE
 ?expresion: expresion_and or_func (or_func_op expresion_and or_func)*
 ?expresion_and: ass and_func (and_func_op ass and_func)*
 and_func_op: EXPRESION_AND -> and_func_op

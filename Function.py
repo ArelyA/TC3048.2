@@ -18,13 +18,13 @@ class Table(ABC):
     self.type = elemType
 
 class Function(Table):
-  def __init__(self, funcId, addr, addrTemp):
+  def __init__(self, funcId, addr, addrTemp, funcType = None):
     """
     Creates a Function object with attributes:
     
     id -> String
 
-    type -> String
+    type -> [String, [Dimension]] | None
 
     addr -> Int
 
@@ -42,7 +42,7 @@ class Function(Table):
 
   def __repr__(self):
     signature = "None" if self.signature == None else self.signature
-    type = "None" if self.type == None else "'" + self.type + "'"
+    type = "None" if self.type == None else "'" + str(self.type) + "'"
     vars = ",\n\t       ".join("'" + key + "':" + repr(self.vars[key]) for key in self.vars)
     return "\n\tid: '" + self.id + "',\n\ttype: " + type + ",\n\tbaseAddress: " + str(self.addr) + ",\n\tbaseTempAddress: " + str(self.addrTemp) + ",\n\tsignature: " + ", ".join(item for item in signature) + ",\n\tvars: {" + vars + '\n\t      }\n'
 
@@ -118,6 +118,9 @@ class Variable(Table):
 
   def getDimensions(self):
     return self.dims
+  
+  def setDimensions(self, dims):
+    self.dims = dims
   
   def addDimension(self, inf, sup):
     """

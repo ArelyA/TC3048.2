@@ -6,7 +6,7 @@ class List(deque):
     self.name = name
   def __repr__(self):
     lenC = len(max(self, key=len))
-    return self.name + " \n" + "\n".join(item.reprQ(lenC) for item in self)
+    return self.name + " \n" + "\n".join("{:^10}".format(idx) + item.reprQ(lenC) for idx, item in enumerate(self))
   def push(self, x):
     """
     Appends the element or elements at the end of the list

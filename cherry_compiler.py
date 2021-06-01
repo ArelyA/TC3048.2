@@ -4,6 +4,10 @@ from Quad import *
 from Queue import *
 from List import *
 from Memory import *
+from utils import convert
+import pickle
+import os
+
 class Compiler(object):
   def __init__(self):
     """
@@ -32,6 +36,8 @@ class Compiler(object):
     self.funciones = {}
     self.funcContext = Stack('Contexto')
     self.cuadruplos = List('Cuadruplos')
+    self.idx = 0
+    self.lines = []
 
     """ PASAR A MACHINE """
     self.mem = 2000
@@ -45,6 +51,13 @@ class Compiler(object):
     self.constantes = {}
     self.reservadas = ["def", "read", "write", "print", "in", "for", "if", "else", "while", "len", "unigrams", "bigrams", "ngrams", "norm", "clean", "find", "substr", "range", "tokenize", "set", "count", "size"]
     self.addFunc('Global')
+
+  def fill(self, jmp = None, idx = None):
+    if jmp == None:
+      jmp = self.popJump()
+    if idx == None:
+      idx = self.idx
+    self.cuadruplos[jmp].dest = idx
 
   def popOperador(self):
     """Removes the next element in operador"""
@@ -86,20 +99,26 @@ class Compiler(object):
     """Removes the next jump"""
     return self.jumps.pop()
 
-  def pushJump(self, jmp):
+  def pushJump(self, jmp = None):
     """Removes the next jump"""
+    if jmp == None:
+      jmp = self.idx
     self.jumps.push(jmp)
 
   def topJump(self):
     """Returns the next jump"""
     return self.jumps.top()
   
-  def addConst(self, constId, constVal):
-    constAddr = self.constantes.get(constId, None)
-    if(constAddr == None):
+  def addConst(self, constId, constType):
+    constVar = self.constantes.get(str(constId), None)
+    
+    if(constVar == None):
       constAddr = self.memory.popConst()
-      self.constantes[constId] = constAddr
-      self.memory[constAddr] = constVal
+      self.constantes[str(constId)] = {"addr": constAddr, "type": constType}
+      self.memory[constAddr] = convert(constId, constType)
+    else:
+      constAddr = constVar['addr']
+
     return constAddr
 
   def addFunc(self, funcId):
@@ -108,9 +127,9 @@ class Compiler(object):
       raise ValueError("Invalid method identifier")
     if(self.funciones.get(funcId, None) == None):
       self.funcContext.push(funcId)
-      addr = self.memory.popAvail() - self.memory.memSize
-      tempAddr = self.memory.popTemp() - self.memory.tempSize
-      self.funciones[funcId] = Function(funcId, (0 if addr < 0 else addr), (0 if tempAddr < self.memory.maxMemLimit else tempAddr))
+      addr = self.memory.popAvail(0)
+      tempAddr = self.memory.popTemp(0) - self.memory.memSize
+      self.funciones[funcId] = Function(funcId, (0 if addr < 0 else addr), (0 if tempAddr < 0 else tempAddr))
     else:
       raise RuntimeError("Cannot define method more than once")
   
@@ -122,11 +141,11 @@ class Compiler(object):
   # def getVar(self, varId):
   #   self.funciones[self.funcContext.top()].get(varId, None)
 
-  def addVar(self, varId, varType):
+  def addVar(self, varId, varType, elem = 1):
     """Adds variable to var dict of the corresponding Function (according to funcContext)"""
     var = self.funciones[self.funcContext.top()].getVar(varId)
     if(var == None):
-      varAddr = self.memory.popAvail() - self.funciones[self.funcContext.top()].addr # guarda direcciones locales
+      varAddr = self.memory.popAvail(elem) - self.funciones[self.funcContext.top()].addr # guarda direcciones locales
       self.funciones[self.funcContext.top()].addVar(varId, varType, varAddr)
     elif var.getType() == None:
       var.setType(varType)
@@ -137,10 +156,10 @@ class Compiler(object):
       raise TypeError("Type-Mismatch: " + varType + " cannot be assigned to " +  var.getType())
     return varAddr
   
-  def addVarTemp(self):
+  def addVarArr(self, tipo, elems):
     """Adds variable to store ARRAYS"""
-    varAddr = self.memory.popTemp() - self.funciones[self.funcContext.top()].addrTemp
-    self.funciones[self.funcContext.top()].addVar(str(varAddr), None, varAddr)
+    varAddr = self.memory.popTemp(elems) - self.funciones[self.funcContext.top()].addrTemp
+    self.funciones[self.funcContext.top()].addVar(str(varAddr), tipo, varAddr)
     return str(varAddr)
 
   def getVar(self, varId):
@@ -159,8 +178,19 @@ class Compiler(object):
   def addQuad(self, op, left, right, addr):
     """Adds Quad to the cuadruplos list"""
     self.cuadruplos.append(Quad(op, left, right, addr))
+    self.idx += 1
     # if(op != '='):
     #   self.cuadruplos.append(Quad(op, left, right, addr))
     # else:
     #   self.cuadruplos.append(Quad(op, right, '', left))
     #   self.pushOperando(self.funciones[self.funcContext.top()].getVar(left).getAddr())
+  
+  def compile(self, name):
+    filename = os.path.join(os.path.dirname(__file__), name + '.pkl')
+    with open(filename + '.pkl', 'wb') as output:  # Overwrites any existing file.
+      pickleDict = {
+        'constantes': self.constantes,
+        'funciones' : self.funciones,
+        'cuadruplos' : self.cuadruplos
+      }
+      pickle.dump(pickleDict, output, pickle.HIGHEST_PROTOCOL)

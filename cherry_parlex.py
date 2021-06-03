@@ -37,7 +37,9 @@ class Machine(object):
     self.source = 'code.cherry'
     self.line = 0
     self.end = " "
-    self.files = []
+    self.returnV = None
+    self.isReturn = False
+    self.crumbs = Stack('Crumbs')
     self.funcContext = Stack('Contexto')
     self.funcContext.push('Global')
     self.constantes = None
@@ -157,10 +159,6 @@ class Machine(object):
       lVal = self.memory[self.readAddr(val)]
       lType = None
     return lVal, lType
-    
-  def addFile(self, filename):
-    if filename not in self.files:
-      self.files.append(filename)
 
   def tempFile(self, filename):
     dir = os.path.dirname(__file__) + '/'
@@ -227,6 +225,8 @@ class Machine(object):
           result = evaluate(op, lVal, rVal)
           self.line += 1
         self.memory[destAddr] = result
+        if self.isReturn:
+          self.returnV = "(" + str(result) + ")"
       elif op == '-':
         """
         string string removeStrfromStr
@@ -301,6 +301,8 @@ class Machine(object):
 
       if lVal >= rVal and lVal < dVal:
         self.line += 1
+        if self.isReturn:
+          self.returnV = None
       else:
         print("Index out of range.")
         self.line = len(self.cuadruplos) - 1
@@ -348,16 +350,47 @@ class Machine(object):
       tempAddr = self.memory.popTemp(0) - self.mem
       func.addr = addr
       func.addrTemp = addrTemp
+      self.memory.popAvail(func.sizeA)
+      self.memory.popTemp(func.sizeT)
       """
     elif op == 'PARAM':
-      """"""
+      """
+      func = self.funciones[self.funcContext.top()]
+      # type, dims, addr
+      param = func.getSignature()[right]
+      paramType = param.getType()
+      paramAddr = param.getAddr()
+      paramDims = param.getDimensions()
+      pVal = self.readAddr(paramAddr)
+      currentContext = self.funcContext.pop()
+      lVal = self.readAddr(left)
+      self.funcContext.push(currentContext)
+      if paramDims == None:
+        self.memory[pVal] = self.memory[lVal]
+      else:
+        for idx in range(paramDims.sup):
+          self.memory[pVal + idx] = self.memory[lVal + idx]
+      """
     elif op == 'GOSUB':
-      """"""
+      """
+      self.crumbs.push(self.line + 1)
+      self.line = self.funciones[self.funcContext.top()].getIp()
+      """
+    elif op == 'ENDFUNC':
+      """
+      func = self.funciones[self.funcContext.top()]
+      self.memory.release(func.addr, func.addrTemp)
+      self.funcContext.pop()
+      self.line = self.crumbs.pop()
+      """
     elif op == 'RETURN':
       """
       pasa valores de un contexto a otro
       busca var 1func e iguala contenidos
       """
+      addr = self.readAddr(self.funciones[self.funcContext.top()].getReturnAddr())
+      destAddr = self.readAddr(dest)
+      self.memory[addr] = self.memory[destAddr]
       print("RETURN")
       self.line += 1
     elif op == 'RETURNSTART':
@@ -366,13 +399,20 @@ class Machine(object):
       continua hasta llegar a RETURNEND
       pasa valores de un contexto a otro
       busca var 1func e iguala contenidos
+      idx = 0
       """
+      idx = 0
+      self.isReturn = True
+      addr = self.readAddr(self.funciones[self.funcContext.top()].getReturnAddr())
       while self.cuadruplos[self.line].op != "RETURNEND":
         print('RETURNSTART', self.cuadruplos[self.line].op)
-
         self.instrSwitch(self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
+        if self.ReturnV != None:
+          self.memory[addr + idx] = self.memory[self.readAddr(self.returnV) + idx]
+          idx += 1
       print('RETURNEND', self.cuadruplos[self.line].op)
       self.line += 1
+      self.isReturn = False
     elif op == 'WRITE':
       """
       WRITE, left, , dest
@@ -433,7 +473,8 @@ class Machine(object):
         self.source = sys.argv[1]
         self.compile()
         self.restore()
-        # self.memory.
+        self.memory.popAvail(self.funciones[self.funcContext.top()].sizeA)
+        self.memory.popTemp(self.funciones[self.funcContext.top()].sizeT)
         """"""
         print(self.cuadruplos)
         with open("quad_log.txt", 'w') as f:

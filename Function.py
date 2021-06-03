@@ -38,7 +38,9 @@ class Function(Table):
     self.signature = [] # List
     self.vars = {} # Dict
     self.addrReturn = None
-    self.size = 0
+    self.sizeA = 0
+    self.sizeT = 0
+    self.ip = 0
     # self.const = {} # Dict
     super().__init__(funcId, addr)
 
@@ -46,13 +48,25 @@ class Function(Table):
     signature = "None" if self.signature == None else self.signature
     type = "None" if self.type == None else "'" + str(self.type) + "'"
     vars = ",\n\t       ".join("'" + key + "':" + repr(self.vars[key]) for key in self.vars)
-    return "\n\tid: '" + self.id + "',\n\ttype: " + type + ",\n\tbaseAddress: " + str(self.addr) + ",\n\tbaseTempAddress: " + str(self.addrTemp) + ",\n\treturnAddress: " + str(self.addrReturn) + ",\n\tsignature: " + ", ".join(repr(item) for item in signature) + ",\n\tsize: " + str(self.size) + ",\n\tvars: {" + vars + '\n\t      }\n'
+    return "\n\tid: '" + self.id + "',\n\ttype: " + type+ "',\n\tip: " + str(self.ip) + ",\n\tbaseAddress: " + str(self.addr) + ",\n\tbaseTempAddress: " + str(self.addrTemp) + ",\n\treturnAddress: " + str(self.addrReturn) + ",\n\tsignature: " + ", ".join(repr(item) for item in signature) + ",\n\tsizeA: " + str(self.sizeA) + ",\n\tsizeT: " + str(self.sizeT) + ",\n\tvars: {" + vars + '\n\t      }\n'
 
   def setReturnAddr(self, addr):
     self.addrReturn = addr
+
+  def getReturnAddr(self):
+    return self.addrReturn
   
-  def increment(self, inc):
-    self.size += inc
+  def incrementA(self, inc):
+    self.sizeA += inc
+  
+  def incrementT(self, inc):
+    self.sizeT += inc
+
+  def setIp(self, ip):
+    self.ip = ip
+
+  def getIp(self):
+    return self.ip
 
   def getAddr(self):
     """
@@ -85,7 +99,6 @@ class Function(Table):
     """
     Add Variable to vars dict.
     """
-    self.increment(elems)
     self.vars[varId] = Variable(varId, varType, varAddr)
 
   def getVar(self, varId):

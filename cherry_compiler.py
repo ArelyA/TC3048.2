@@ -123,6 +123,17 @@ class Compiler(object):
       if currentType != funcType:
         raise SyntaxError("Returns must be of the same type.")
     self.funciones[self.funcContext.top()].setType(funcType)
+  
+  def popAvail(self, index = 1):
+    self.funciones[self.funcContext.top()].incrementA(index)
+    return self.memory.popAvail(index)
+  
+  def popTemp(self, index = 1):
+    self.funciones[self.funcContext.top()].incrementT(index)
+    return self.memory.popTemp(index)
+  
+  def setFuncIp(self):
+    self.funciones[self.funcContext.top()].setIp(self.idx)
 
   def release(self):
     """
@@ -141,7 +152,7 @@ class Compiler(object):
     """Adds variable to var dict of the corresponding Function (according to funcContext)"""
     var = self.funciones[self.funcContext.top()].getVar(varId)
     if(var == None):
-      varAddr = self.memory.popAvail(elem) - self.funciones[self.funcContext.top()].addr # guarda direcciones locales
+      varAddr = self.popAvail(elem) - self.funciones[self.funcContext.top()].addr # guarda direcciones locales
       self.funciones[self.funcContext.top()].addVar(varId, varType, varAddr, elem)
     elif var.getType() == None:
       var.setType(varType)
@@ -154,7 +165,7 @@ class Compiler(object):
   
   def addVarArr(self, tipo, elems):
     """Adds variable to store ARRAYS"""
-    varAddr = self.memory.popTemp(elems) - self.funciones[self.funcContext.top()].addrTemp
+    varAddr = self.popTemp(elems) - self.funciones[self.funcContext.top()].addrTemp
     self.funciones[self.funcContext.top()].addVar(str(varAddr), tipo, varAddr, elems)
     return str(varAddr)
 
@@ -169,7 +180,7 @@ class Compiler(object):
     return self.funciones["Global"].getVar(varId)
   
   def getTemp(self):
-    return self.memory.popTemp() - self.funciones[self.funcContext.top()].addrTemp
+    return self.popTemp() - self.funciones[self.funcContext.top()].addrTemp
 
   def addQuad(self, op, left, right, addr):
     """Adds Quad to the cuadruplos list"""

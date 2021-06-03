@@ -352,6 +352,7 @@ class PassiveSyntax(Transformer):
     funcName = funcName[0]
     self.skip()
     self.compiler.addFunc(funcName.value)
+    self.compiler.setFuncIp()
     # self.compiler.lines.append(meta.line)
     # self.compiler.addQuad("ERA", funcName.value, "", "")
     return funcName

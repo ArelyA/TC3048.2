@@ -1,11 +1,13 @@
 {'Global': 
 	id: 'Global',
-	type: None,
+	type: None',
+	ip: 0,
 	baseAddress: 0,
 	baseTempAddress: 0,
 	returnAddress: None,
 	signature: ,
-	size: 17,
+	sizeA: 14,
+	sizeT: 29,
 	vars: {'g':{type: ''CTE_FILE'', dims: , addr: 0},
 	       'w':{type: ''CTE_STRING'', dims: , addr: 1},
 	       'f':{type: ''CTE_FILE'', dims: , addr: 2},
@@ -20,23 +22,27 @@
 	      }
 , 'func': 
 	id: 'func',
-	type: '['CTE_INT', [0 - 3 | offset: 0]]',
+	type: '['CTE_INT', [0 - 3 | offset: 0]]'',
+	ip: 73,
 	baseAddress: 8,
 	baseTempAddress: 25,
 	returnAddress: G8,
 	signature: ,
-	size: 2,
+	sizeA: 2,
+	sizeT: 3,
 	vars: {'a':{type: ''CTE_INT'', dims: , addr: 0},
 	       'b':{type: ''CTE_INT'', dims: , addr: 1}
 	      }
 , 'funcB': 
 	id: 'funcB',
-	type: '['CTE_INT', None]',
+	type: '['CTE_INT', None]'',
+	ip: 92,
 	baseAddress: 13,
-	baseTempAddress: 0,
+	baseTempAddress: 29,
 	returnAddress: G13,
 	signature: {type: ''CTE_INT'', dims: 0 - 2 | offset: 0, addr: 0}, {type: ''CTE_STRING'', dims: , addr: 2},
-	size: 3,
+	sizeA: 3,
+	sizeT: 4,
 	vars: {'param1':{type: ''CTE_INT'', dims: 0 - 2 | offset: 0, addr: 0},
 	       'p':{type: ''CTE_STRING'', dims: , addr: 2}
 	      }

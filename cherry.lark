@@ -3,20 +3,33 @@ end_prog: -> end_prog
 
 // Functions can only be defined in the global context
 stmt_ext: stmt
-  | def_func // TODO
+  | def_func // DONE
 
 // Functions that can be declared within an stmt block
-?stmt: asign
-  | if_else // TODO
-  | print // TODO
-  | for // TODO
-  | while // TODO
+simp_stmt: asign
+  | print
   | read // TODO
   | call_func // TODO
   | write // TODO
+  | create
+  | delete
+
+
+comp_stmt: if_else // DONE
+  | for // DONE
+  | while // DONE
+
+?stmt: _NEWLINE | comp_stmt | simp_stmt
 
 // Stmt block defined with proper indentation
-block: ("\t" stmt)+
+// block: _NEWLINE _INDENT stmt+ _DEDENT
+
+block: _NEWLINE _INDENT stmt_block
+
+stmt_block: stmt stmt_block
+  | _DEDENT
+  | return _NEWLINE* _DEDENT -> return_line
+  
 
 // Assignment
 ?asign: asign_simp // DONE
@@ -27,14 +40,13 @@ asign_simp: id asign_op asign_simp_opt
 ?asign_simp_func: -> asign_simp_func
 ?asign_simp_opt: var_it // TODO - func_it
   | expresion asign_simp_func
-  | call_func // TODO
+  // | call_func // TODO
 !asign_op: "=" -> asign_op
 // Item
 asign_item: id "[" expresion asign_item_index asign_op asign_item_opt 
 asign_item_func: -> asign_item_func
 asign_item_index: "]" -> asign_item_index
-asign_item_opt: expresion asign_item_func
-  | call_func // TODO
+asign_item_opt: expresion asign_item_func // TODO
 
 
 
@@ -43,25 +55,29 @@ call_func_opt: expresion
   | func_it
 
 call_func_name: ID -> call_func_name // ADD TOPE
-cal_func_param: ")" -> call_func_param
+call_func_param: ")" -> call_func_param
+
 print: "print" put_fondo print_opt ("," print_opt)* ")" print_func
 !put_fondo: "(" -> put_fondo
 print_func: -> print_func
 print_opt: expresion
   | var_it
 
-write: write_opt ".write" "(" write_opt ")"
-// Copia del primer archivo al segundo y si el izq es temp lo borra 
-// Si el de la izq no existe manda error
-write_opt: cte_file
-  | id // revisa si id existe
-read: "read" "(" id ["," read_opt] ")" // If operando.top == int, float, string o file: poppea 2 veces, sino solo 1
+
+write: write_opt ".write" "(" write_opt ")" -> write_func
+
+?write_opt: CTE_FILE
+  | ID 
+
+
+read: "read" read_tope "(" id ["," TYPE_OPT] read_func // If operando.top == int, float, string o file: poppea 2 veces, sino solo 1
 // If id no existe lo crea
-!read_opt: "int"
+read_tope: -> read_tope
+read_func: ")" -> read_func
+TYPE_OPT: "int"
   | "float"
   | "string"
   | "file"
-
 
 if_else: "if" expresion if_func block [else_func ":" block] endif
 !if_func: ":" -> if_func // DONE
@@ -74,22 +90,36 @@ while_cond: ":" -> while_cond // DONE
 while_end: -> while_end // DONE
 
 for: "for" id "in" for_opt for_check block for_end
-for_check: ":" -> for_check // DONE
-for_end: -> for_end // DONE
+for_check: ":" -> for_check 
+for_end: -> for_end
 for_opt: var_it_ext
-  | range // Tipo INT
+  | range 
+
+range: "range" range_tope expresion ("," expresion)~0..2 range_func
+
+range_tope: "(" -> range_tope 
+range_func: ")" -> range_func 
+
+// def_func_block: _NEWLINE _INDENT def_stmt 
+
+// def_stmt: stmt def_stmt
+//   | return def_stmt
+//   | _DEDENT
   
 
-def_func: "def" def_func_name "(" [def_func_param ("," def_func_param)*] ")" ":" block [RETURN def_func_opt def_func_type] def_func_end
-RETURN.10: "\t" "return"
+?def_func: "def" def_func_name "(" [def_func_param ("," def_func_param)*] ")" ":" block def_func_end
+return: RETURN def_func_opt 
+RETURN.20: "return"
 def_func_name: ID -> def_func_name // DONE
-def_func_param: ID -> def_func_param_func // DONE
-  | id "[" cte_int def_func_param_it // DONE
+def_func_param: type_opt id "[" cte_int def_func_param_it // DONE
+  | type_opt def_func_param_func // DONE
+def_func_param_func: ID -> def_func_param_func
+type_opt: TYPE_OPT -> type_opt
 !def_func_param_it: "]" -> def_func_param_it // DONE
 def_func_type: -> def_func_type // DONE
 def_func_end: -> def_func_end // DONE
-def_func_opt: expresion
-  | var_it
+def_func_opt: expresion def_func_type
+  | var_it def_func_type
 
 func_cte: len
   | count
@@ -100,19 +130,24 @@ len_opt: var_it
   | var_str
 count: var_it_ext ".count(" count_opt ")"
 count_opt: expresion
-//  | var_str
+
 size: "size(" CTE_FILE ")"
+create: "create" "(" (CTE_FILE | ID) ")" -> create_func
+delete: "delete" "(" (CTE_FILE | ID) ")" -> delete_func
 find: var_str_ext ".find(" var_str_ext ")"
 
 func_str: substr
   | join
   | norm
   | clean
+  | getline
+  | getword
+
 substr: var_str_ext "[" expresion ":" expresion "]"
 join: var_str_ext ".join(" var_it ")"
 clean: opts ".clean(" ")"
 norm: opts ".norm(" var_str ")"
-opts: var_str_ext | cte_file
+opts: var_str | id | cte_file
 
 ?var_cte: CTE_INT -> int_func
   | CTE_FLOAT -> float_func
@@ -122,6 +157,7 @@ opts: var_str_ext | cte_file
   | id "[" expresion asign_item_index
   | func_cte
   | var_str
+  | call_func
   
 cte_int: CTE_INT -> cte_int
 ?var_it: func_it // TODO - IF ASIGN (OP == '=') DO SMTHN ELSE DO NOTHING
@@ -139,18 +175,16 @@ var_it_fondo: -> var_it_fondo
 
 ?var_str_ext: var_str
   | id
+  
 ?var_it_ext: var_it
   | id
-id: ID -> id_func
 
-func_it: set
-  | getline
-  | getword
-  | append
-range: "range(" expresion ("," expresion)~0..2 ")"
-set: var_it_ext ".set(" ")" // ASIGNA EN NUEVA VARIABLE
-getline: cte_file "." "getLine" "(" expresion ")"
-getword: cte_file "." "getWord" "(" expresion ")"
+?id: ID -> id_func
+
+func_it: append
+
+getline: cte_file "." "getLine" "(" expresion ")" -> get_line
+getword: cte_file "." "getWord" "(" expresion ")" -> get_word
 append: "append" "(" var_it_ext "," var_it_ext ")"
 
 // DONE
@@ -170,15 +204,18 @@ not_func_op: NOT -> not_func_op
 comp: exp comp_func [comp_func_op exp comp_func]
 comp_func_op: COMP_OPT -> comp_func_op
 comp_func: -> comp_func
-COMP_OPT: ">"
-  | ">="
-  | "<"
+COMP_OPT:">="
   | "<="
   | "=="
   | "!="
+  | "<"
+  |  ">"
+
 exp: term exp_func
   | term exp_func exp_opt exp
+
 exp_opt: EXP_OPT  -> exp_func_op
+
 exp_func: -> exp_func
 EXP_OPT: "+"
   | "-"
@@ -192,9 +229,11 @@ factor: "(" factor_paren expresion ")" factor_paren_end
 factor_paren: -> factor_paren
 factor_paren_end: -> factor_paren_end
 CTE_BOOL.6: "True"  | "False" // BOOL terminal
-CTE_FILE: /(\.{0,2}\/){0,1}[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\./ (/txt/ | /html/ | /htm/)~1
+CTE_FILE: (/(\.{0,2}\/){0,1}/ | /C:\//)~0..1 /[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\./ (/txt/ | /html/ | /htm/)~1
 // imports from terminal library
-%import common.CNAME -> ID // ID terminal
+
+ID.-1:/[a-zA-Z_]\w*/
+//%import common.CNAME -> ID // ID terminal
 %import common.ESCAPED_STRING -> CTE_STRING // STRING terminal
 %import common.SIGNED_INT -> CTE_INT // INT terminal
 %import common.SIGNED_FLOAT -> CTE_FLOAT //FLOAT terminal
@@ -202,10 +241,15 @@ CTE_FILE: /(\.{0,2}\/){0,1}[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\./ (/txt/ | /html
 %import common.CPP_COMMENT
 %import common.C_COMMENT
 
-WHITESPACE: /[ \f\r\n]/+
+_NEWLINE: /(\r?\n[\t ]*)+/
+%ignore /[\t \f]+/  // WS
+%ignore /\\[\t \f]*\r?\n/   // LINE_CONT
 
-%ignore WHITESPACE // Disregard spaces in text
+// WHITESPACE: /[ \f\r\n]/+
+// %import common.WS_INLINE
+// %ignore WS_INLINE
+// %ignore WHITESPACE // Disregard spaces in text
 %ignore SH_COMMENT
 %ignore  CPP_COMMENT
 %ignore  C_COMMENT
-  
+%declare _INDENT _DEDENT

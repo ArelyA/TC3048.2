@@ -37,6 +37,8 @@ class Function(Table):
     self.addrTemp = addrTemp
     self.signature = [] # List
     self.vars = {} # Dict
+    self.addrReturn = None
+    self.size = 0
     # self.const = {} # Dict
     super().__init__(funcId, addr)
 
@@ -44,7 +46,13 @@ class Function(Table):
     signature = "None" if self.signature == None else self.signature
     type = "None" if self.type == None else "'" + str(self.type) + "'"
     vars = ",\n\t       ".join("'" + key + "':" + repr(self.vars[key]) for key in self.vars)
-    return "\n\tid: '" + self.id + "',\n\ttype: " + type + ",\n\tbaseAddress: " + str(self.addr) + ",\n\tbaseTempAddress: " + str(self.addrTemp) + ",\n\tsignature: " + ", ".join(item for item in signature) + ",\n\tvars: {" + vars + '\n\t      }\n'
+    return "\n\tid: '" + self.id + "',\n\ttype: " + type + ",\n\tbaseAddress: " + str(self.addr) + ",\n\tbaseTempAddress: " + str(self.addrTemp) + ",\n\treturnAddress: " + str(self.addrReturn) + ",\n\tsignature: " + ", ".join(repr(item) for item in signature) + ",\n\tsize: " + str(self.size) + ",\n\tvars: {" + vars + '\n\t      }\n'
+
+  def setReturnAddr(self, addr):
+    self.addrReturn = addr
+  
+  def increment(self, inc):
+    self.size += inc
 
   def getAddr(self):
     """
@@ -57,6 +65,13 @@ class Function(Table):
   def getSignature(self):
     return self.signature
 
+  def setSignature(self, signature):
+    self.signature = None
+    self.signature = signature
+  
+  def getName(self):
+    return self.id
+
   def addParam(self, paramId):
     """
     Add parameter to signature list.
@@ -66,10 +81,11 @@ class Function(Table):
     else:
       self.signature.append(paramId)
   
-  def addVar(self, varId, varType, varAddr):
+  def addVar(self, varId, varType, varAddr, elems):
     """
     Add Variable to vars dict.
     """
+    self.increment(elems)
     self.vars[varId] = Variable(varId, varType, varAddr)
 
   def getVar(self, varId):

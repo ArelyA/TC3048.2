@@ -5,30 +5,12 @@ from Queue import *
 from List import *
 from Memory import *
 from utils import convert
-import pickle
+import dill 
 import os
 
 class Compiler(object):
-  def __init__(self):
-    """
-    Initializes variables
-
-    operadores -> Stack
-
-    operandos -> Stack
+  def __init__(self, mem = 2000, memTemp = 1000, memConst = 1000):
     
-    tipos -> Stack
-
-    jumps -> Stack
-
-    funciones -> Dict
-
-    funcContext -> Stack
-
-    cuadruplos -> List
-
-    memory -> Memory
-    """
     self.operadores = Stack('Operadores')
     self.operandos = Stack('Operandos')
     self.tipos = Stack('Tipos')
@@ -38,18 +20,12 @@ class Compiler(object):
     self.cuadruplos = List('Cuadruplos')
     self.idx = 0
     self.lines = []
-
-    """ PASAR A MACHINE """
-    self.mem = 2000
-    self.memTemp = 1000
-    self.memConst = 1000
+    self.mem = mem
+    self.memTemp = memTemp
+    self.memConst = memConst
     self.memory = Memory('Memory', self.mem, self.memTemp, self.memConst)
-    """ HASTA AQUI """
-
-    #self.memory.push([object() for i in range(len(self.memory))])
-    # constantes
     self.constantes = {}
-    self.reservadas = ["def", "read", "write", "print", "in", "for", "if", "else", "while", "len", "unigrams", "bigrams", "ngrams", "norm", "clean", "find", "substr", "range", "tokenize", "set", "count", "size"]
+    self.reservadas = ["def", "read", "write", "print", "in", "for", "if", "else", "while", "len", "norm", "clean", "find", "range", "count", "size", "join", "append", "create", "delete"]
     self.addFunc('Global')
 
   def fill(self, jmp = None, idx = None):
@@ -120,6 +96,9 @@ class Compiler(object):
       constAddr = constVar['addr']
 
     return constAddr
+  
+  def getFunc(self, funcId):
+    return self.funciones.get(funcId, None)
 
   def addFunc(self, funcId):
     """Adds function to context and to funciones dict"""
@@ -128,7 +107,7 @@ class Compiler(object):
     if(self.funciones.get(funcId, None) == None):
       self.funcContext.push(funcId)
       addr = self.memory.popAvail(0)
-      tempAddr = self.memory.popTemp(0) - self.memory.memSize
+      tempAddr = self.memory.popTemp(0) - self.mem
       self.funciones[funcId] = Function(funcId, (0 if addr < 0 else addr), (0 if tempAddr < 0 else tempAddr))
     else:
       raise RuntimeError("Cannot define method more than once")
@@ -137,16 +116,33 @@ class Compiler(object):
     self.funciones[self.funcContext.top()].addParam(paramId)
 
   def setFuncTipo(self, funcType):
+    if self.funcContext.top() == 'Global':
+      raise SyntaxError("Return does not belong to a function.")
+    currentType = self.funciones[self.funcContext.top()].getType()
+    if currentType != None:
+      if currentType != funcType:
+        raise SyntaxError("Returns must be of the same type.")
     self.funciones[self.funcContext.top()].setType(funcType)
-  # def getVar(self, varId):
-  #   self.funciones[self.funcContext.top()].get(varId, None)
+
+  def release(self):
+    """
+    Releases memory used by function and removes it from current context
+    """
+    funcId = self.funcContext.top()
+    func = self.funciones[funcId]
+    self.memory.release(func.addr, func.addrTemp)
+    self.funcContext.pop()
+    return func
+  
+  def getContexto(self):
+    return self.funcContext.top()
 
   def addVar(self, varId, varType, elem = 1):
     """Adds variable to var dict of the corresponding Function (according to funcContext)"""
     var = self.funciones[self.funcContext.top()].getVar(varId)
     if(var == None):
       varAddr = self.memory.popAvail(elem) - self.funciones[self.funcContext.top()].addr # guarda direcciones locales
-      self.funciones[self.funcContext.top()].addVar(varId, varType, varAddr)
+      self.funciones[self.funcContext.top()].addVar(varId, varType, varAddr, elem)
     elif var.getType() == None:
       var.setType(varType)
       varAddr = var.getAddr()
@@ -159,7 +155,7 @@ class Compiler(object):
   def addVarArr(self, tipo, elems):
     """Adds variable to store ARRAYS"""
     varAddr = self.memory.popTemp(elems) - self.funciones[self.funcContext.top()].addrTemp
-    self.funciones[self.funcContext.top()].addVar(str(varAddr), tipo, varAddr)
+    self.funciones[self.funcContext.top()].addVar(str(varAddr), tipo, varAddr, elems)
     return str(varAddr)
 
   def getVar(self, varId):
@@ -179,18 +175,11 @@ class Compiler(object):
     """Adds Quad to the cuadruplos list"""
     self.cuadruplos.append(Quad(op, left, right, addr))
     self.idx += 1
-    # if(op != '='):
-    #   self.cuadruplos.append(Quad(op, left, right, addr))
-    # else:
-    #   self.cuadruplos.append(Quad(op, right, '', left))
-    #   self.pushOperando(self.funciones[self.funcContext.top()].getVar(left).getAddr())
   
   def compile(self, name):
-    filename = os.path.join(os.path.dirname(__file__), name + '.pkl')
-    with open(filename + '.pkl', 'wb') as output:  # Overwrites any existing file.
-      pickleDict = {
-        'constantes': self.constantes,
-        'funciones' : self.funciones,
-        'cuadruplos' : self.cuadruplos
-      }
-      pickle.dump(pickleDict, output, pickle.HIGHEST_PROTOCOL)
+    filename = os.path.join(os.path.dirname(__file__) + '/', name + '.pkl')
+    with open(filename, 'wb') as output:
+      dill.dump(self.constantes, output, -1)
+      dill.dump(self.funciones, output, -1)
+      for quad in self.cuadruplos:
+        dill.dump(quad, output, -1)

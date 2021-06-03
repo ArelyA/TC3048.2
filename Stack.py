@@ -4,6 +4,10 @@ class Stack(deque):
     """Stack implementation using deque container from the collections module"""
     def __init__(self, name):
         self.name = name
+        
+    def __reduce__(self):
+        return (self.__class__, (self.name,))
+
     def __repr__(self):
         return self.name + " [" + ", ".join(repr(item) for item in self)  + "]"
     def empty(self):

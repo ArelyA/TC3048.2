@@ -1,0 +1,8 @@
+if 1 > 2:
+	print(True)
+else:
+	print(False)
+
+def funcB(int param1):
+	param1 = param1 + 1
+	return 1

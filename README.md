@@ -69,7 +69,7 @@ Funciones especiales:
 | func_pos     | POS       | regresa el part-of-speech de cada token (nivel palabra)      |
 | func_tok     | tokenize  | regresa el archivo separado en tokens, ya sea por oración o por palabra. TBD |
 | func_norm    | normalize | pasa todas las letras a minúsculas y remueve todos los símbolos, la lista de símbolos a remover se puede ser definida por el usuario. Símbolos base = Todo excepto puntos, números y espacios |
-| func_clean   | clean     | remueve HTML y regresa el texto limpio                       |	
+| func_clean   | clean     | remueve HTML y regresa el texto limpio                       |
 | func_unigram | unigram   | regresa las veces que se repite cada palabra                 |
 | func_bigram  | bigram    | regresa las veces que aparece un par de palabras consecutivas |
 | func_ngram   | ngram     | regresa las veces que aparece un conjunto de n palabras consecutivas |
@@ -101,3 +101,11 @@ Funciones especiales:
 * Se crearon funciones para operaciones básicas
 * Se comenzó a generar cuádruplos
 * Se comenzó a generar las estructuras para memoria
+
+### Notas (ENTREGA)
+* Falta actualizar la documentación
+* Compila y ejecuta:
+  * Evaluación de expresiones
+  * Manejo de arreglos
+  * Manejo de archivos
+  * Impresión

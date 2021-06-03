@@ -147,7 +147,7 @@ SemanticCube = {
           'CTE_FILE': False
         }
       },
-      'comp': {
+      'compC': {
         'CTE_INT': {
           'CTE_INT': 'CTE_BOOL',
           'CTE_FLOAT': 'CTE_BOOL',
@@ -166,6 +166,43 @@ SemanticCube = {
           'CTE_INT': False,
           'CTE_FLOAT': False,
           'CTE_BOOL': 'CTE_BOOL',
+          'CTE_STRING': False,
+          'CTE_FILE': False
+        },
+        'CTE_STRING': {
+          'CTE_INT': False,
+          'CTE_FLOAT': False,
+          'CTE_BOOL': False,
+          'CTE_STRING': 'CTE_BOOL',
+          'CTE_FILE': False
+        },
+        'CTE_FILE': {
+          'CTE_INT': False,
+          'CTE_FLOAT': False,
+          'CTE_BOOL': False,
+          'CTE_STRING': 'CTE_BOOL',
+          'CTE_FILE': False
+        }
+      },
+      'compS': {
+        'CTE_INT': {
+          'CTE_INT': 'CTE_BOOL',
+          'CTE_FLOAT': 'CTE_BOOL',
+          'CTE_BOOL': False,
+          'CTE_STRING': False,
+          'CTE_FILE': False
+        },
+        'CTE_FLOAT': {
+          'CTE_INT': 'CTE_BOOL',
+          'CTE_FLOAT': 'CTE_BOOL',
+          'CTE_BOOL': False,
+          'CTE_STRING': False,
+          'CTE_FILE': False
+        },
+        'CTE_BOOL': {
+          'CTE_INT': False,
+          'CTE_FLOAT': False,
+          'CTE_BOOL': False,
           'CTE_STRING': False,
           'CTE_FILE': False
         },

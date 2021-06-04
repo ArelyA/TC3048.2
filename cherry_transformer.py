@@ -26,7 +26,7 @@ class PassiveSyntax(Transformer):
     self.orOpL = ["or"] 
     self.compaoFunctL = self.orOpL + self.andOpL
     self.cube = SemanticCube
-    self.types = {'int': 'CTE_INT', 'float': 'CTE_FLOAT', 'string': 'CTE_STRING', 'file': 'CTE_FILE'}
+    self.types = {'int': 'CTE_INT', 'float': 'CTE_FLOAT', 'string': 'CTE_STRING', 'file': 'CTE_FILE', 'bool': 'CTE_BOOL'}
 
   def skip(self):
     self.compiler.pushJump()
@@ -183,7 +183,7 @@ class PassiveSyntax(Transformer):
           self.compiler.pushOperando(addr)
           self.compiler.pushTipo(self.cube[oper][leftT])
         else:
-          raise TypeError("Error at line " + str(line) + ".\n" + "Type-Mismatch: " + oper + " " + leftT)
+          raise TypeError("Error at line " + str(line) + ".\n" + "Type-Mismatch: " + oper + " " + self.compiler.displayTypes[leftT])
 
     except IndexError:
       """print("Empty pile.")"""
@@ -193,7 +193,6 @@ class PassiveSyntax(Transformer):
   def expression(self, lst):
     try:
       operador = self.compiler.topOperador()
-
       if(operador in lst):
         line = self.compiler.lines.pop()
 
@@ -204,7 +203,7 @@ class PassiveSyntax(Transformer):
 
         right = self.compiler.popOperando()
         left = self.compiler.popOperando()
-
+        
         if leftT == 'ID':
           
           leftVar = self.compiler.getVar(left)
@@ -216,6 +215,7 @@ class PassiveSyntax(Transformer):
           else:
             leftVar = self.compiler.getVarG(left)
             if leftVar == None:
+              
               raise NameError("Error at line " + str(line) + ".\n" + "Unknown identifier " + left + ".")
             else:
               leftT = leftVar.getType()
@@ -250,7 +250,7 @@ class PassiveSyntax(Transformer):
           self.compiler.pushOperando(addr)
           self.compiler.pushTipo(self.cube[oper_cube][leftT][rightT])
         else:
-          raise TypeError("Error at line " + str(line) + ".\n" + "Type-Mismatch: " + leftT + " " + oper + " " + rightT)
+          raise TypeError("Error at line " + str(line) + ".\n" + "Type-Mismatch: " + self.compiler.displayTypes[leftT] + " " + oper + " " + self.compiler.displayTypes[rightT])
 
     except IndexError:
       """print("Empty pile.")"""
@@ -339,7 +339,7 @@ class PassiveSyntax(Transformer):
     left = self.compiler.popOperando()
     leftT = self.compiler.popTipo()
     if leftT != rightT:
-      raise TypeError("Error at line " + str(line) + ".\n" + "Type-Mismatch: cannot asign " + rightT + " to " + leftT)
+      raise TypeError("Error at line " + str(line) + ".\n" + "Type-Mismatch: cannot asign " + self.compiler.displayTypes[rightT] + " to " + self.compiler.displayTypes[leftT])
     self.compiler.addQuad('=', right, "", left)
 
 
@@ -398,13 +398,6 @@ class PassiveSyntax(Transformer):
     signature = [func.getVar(elem) for elem in func.getSignature()]
     if len(signature) > 0:
       func.setSignature(signature)
-    if funcType != None:
-      dims = funcType[1]
-      elems = sum(dim.sup for dim in dims) if dims != None else 1
-      addr = self.compiler.addVar("1" + func.getName(), funcType[0], elems)
-      if dims != None:
-        self.compiler.getVar("1" + func.getName()).setDimensions(dims)
-      func.setReturnAddr("G" + str(addr))
     self.compiler.addQuad("ENDFUNC", "", "", "")
     self.compiler.fill()
     
@@ -416,11 +409,15 @@ class PassiveSyntax(Transformer):
     line = self.compiler.lines.pop()
     tipo = self.compiler.popTipo()
     operando = self.compiler.popOperando()
+    func = self.compiler.getContexto()
+    elems = 1
+    dims = None
     if tipo != 'ID':
       self.compiler.setFuncTipo([tipo, None])
       self.compiler.addQuad("RETURN", "", "", operando)
     else:
       funcVar = self.compiler.getVar(operando)
+      contexto = None
       if funcVar != None:
         tipo = funcVar.getType()
         operando = funcVar.getAddr()
@@ -431,17 +428,25 @@ class PassiveSyntax(Transformer):
         else:
           tipo = funcVar.getType()
           operando = "G" + str(funcVar.getAddr())
+          contexto = "G"
       if len(funcVar.getDimensions()) == 0:
         self.compiler.setFuncTipo([tipo, None])
         self.compiler.addQuad("RETURN", "", "", operando)
       else: # Array CONTINUE
         self.compiler.setFuncTipo([tipo, funcVar.getDimensions()])
         self.compiler.addQuad("RETURNSTART", "", "", "")
-        for dim in funcVar.getDimensions():
+        dims = funcVar.getDimensions()
+        elems = sum(dim.sup for dim in dims)
+        for dim in dims:
           for idx in range(dim.sup):
             constAddr = self.compiler.addConst(idx, 'CTE_INT')
-            arrElem = self.getElem(funcVar, constAddr, dim.sup, dim.offset)
+            arrElem = self.getElem(funcVar, constAddr, dim.sup, dim.offset, contexto)
         self.compiler.addQuad("RETURNEND", "", "", "")
+      
+    addr = self.compiler.addFuncVar(tipo, elems)
+    self.compiler.getFunc(func).setReturnAddr("G" + str(addr))
+    if dims != None:
+      self.compiler.getVarG("1" + func).setDimensions(dims)
 
   def id_simp(self, id, ch, meta):
     id = id[0]
@@ -451,9 +456,11 @@ class PassiveSyntax(Transformer):
 
   def getElem(self, var, idx, sup, off, context = None):
     """"""
+    
     varAddr = "G" + str(var.getAddr()) if context != None else var.getAddr()
     self.compiler.addQuad('VER', idx, self.compiler.addConst(0, 'CTE_INT'), self.compiler.addConst(sup, 'CTE_INT'))
     addrElem = self.expression_genQuad('+', idx, self.compiler.addConst(varAddr, 'CTE_INT'))
+    
     if off != 0:
       addrElem = self.expression_genQuad('*', addrElem, off)
     # addrElem = self.addr_genQuad('=', addrOff, "")
@@ -551,7 +558,6 @@ class PassiveSyntax(Transformer):
   def var_it_asign(self, ch, meta):
     """Only works for 1-D Arrays"""
     line = meta.line
-  
     stackElem = Stack("array")
     tipo = None
     while(self.compiler.topOperando() != "["):
@@ -600,7 +606,6 @@ class PassiveSyntax(Transformer):
       self.compiler.pushOperando(arrId)
       self.compiler.pushTipo('ID')
     else: 
-      
       _ = self.compiler.popOperador()
       
       if self.compiler.topTipo() != 'ID':
@@ -659,6 +664,8 @@ class PassiveSyntax(Transformer):
               constAddr = self.compiler.addConst(idx, 'CTE_INT')
               arrElem = self.getElem(printVar, constAddr, dim.sup, dim.offset, context)
               stackElems.push(arrElem)
+              stackElems.push(",")
+          stackElems.pop()
           stackElems.push("[")
     self.compiler.popOperando()
     self.compiler.popTipo()
@@ -833,24 +840,24 @@ class PassiveSyntax(Transformer):
     while(self.compiler.topOperando() != "("):
       elem = self.compiler.popOperando()
       elemType = self.compiler.popTipo()
-
       if elemType != 'ID':
         if elemType != 'CTE_INT':
           raise TypeError("Error at line " + str(line) + ".\n" + "Range elements must be integers.")
         stackElems.push(elem)
       else:
         """"""
+        
         elemVar = self.compiler.getVarG(elem)
         if elemVar == None:
           raise NameError("Error at line " + str(line) + ".\n" + "Unknown identifier " + elemVar + ".")
         else:
           context = "G"
+        elemType = elemVar.getType()
         if len(elemVar.getDimensions()) > 0:
           raise TypeError("Error at line " + str(line) + ".\n" + "Dimension-Mismatch: Range elements cannot be arrays.")
         if elemType != 'CTE_INT':
           raise TypeError("Error at line " + str(line) + ".\n" + "Range elements must be integers.")
-        stackElems.push(elem)
-      
+        stackElems.push(elemVar.getAddr())
     self.compiler.popOperando()
     self.compiler.popTipo()
     ini = 0
@@ -863,13 +870,13 @@ class PassiveSyntax(Transformer):
       
     elif elems == 2:
       qty = self.compiler.addConst(qty, 'CTE_INT')
-      fin = stackElems.pop()
       ini = stackElems.pop()
+      fin = stackElems.pop()
     else:
-      qty = stackElems.pop()
-      fin = stackElems.pop()
       ini = stackElems.pop()
-    
+      fin = stackElems.pop()
+      qty = stackElems.pop()
+      
     self.compiler.pushOperando(ini)
     self.compiler.pushTipo('CTE_INT')
     self.compiler.pushOperando(fin)
@@ -895,10 +902,10 @@ class PassiveSyntax(Transformer):
 
   def call_func_param(self, id, meta):
     line = meta.line
-    params = Stack("Params")
+    params = []
     while self.compiler.topOperando() != "(":
       param = [self.compiler.popOperando(), self.compiler.popTipo()]
-      params.push(param)
+      params.append(param)
 
     self.compiler.popOperando()
     self.compiler.popTipo()
@@ -908,27 +915,40 @@ class PassiveSyntax(Transformer):
     func = self.compiler.getFunc(funcId)
 
     signature = func.getSignature()
-
     if len(params) != len(signature):
       raise TypeError("Error at line " + str(line) + ".\n" + "Unknown function name and signature.")
     
     self.compiler.addQuad("ERA", funcId, "", "")
 
-    for elem in signature:
+    for idx, elem in enumerate(signature):
       param = params.pop()
       paramId = param[0]
       paramType = param[1]
+      context = ""
 
       if paramType == 'ID':
         paramVar = self.compiler.getVar(paramId)
         if paramVar == None:
           paramVar = self.compiler.getVarG(paramId)
-
-        # CONTINUE
-
-      self.compiler.addQuad("PARAM", "ADDR", "#", "")
+          if paramVar == None:
+            raise NameError("Error at line " + str(line) + ".\n" + "Unknown identifier " + paramId + ".")
+          else:
+            context = "G"
+        
+        paramId = context + str(paramVar.getAddr()) if context != "" else paramVar.getAddr()
+      self.compiler.addQuad("PARAM", paramId, idx, "")
 
     self.compiler.addQuad("GOSUB", funcId, "", "")
+    varFunc = self.compiler.getVarG("1" + funcId)
+    if varFunc != None:
+      varFuncAddr = varFunc.getAddr()
+      addr = self.expression_genQuad("=", "G" + str(varFuncAddr), "")
+      self.compiler.pushOperando(addr)
+      self.compiler.pushTipo(varFunc.getType())
+    else:
+      self.compiler.pushOperando("1" + funcId)
+      self.compiler.pushTipo('ID')
+
 
     return id
   
@@ -941,33 +961,69 @@ class PassiveSyntax(Transformer):
     
     if TypeL == 'ID':
       fileLVar = self.compiler.getVar(fileL)
+      context = None
       if fileLVar == None:
         fileLVar = self.compiler.getVarG(fileL)
         if fileLVar == None:
           raise NameError("Error at line " + str(line) + ".\n" + "Unknown identifier.")
+        else:
+          context = "G"
       
       if fileLVar.getType() != 'CTE_FILE':
         raise TypeError("Error at line " + str(line) + ".\n" + "Value is not a filename.")
       if len(fileLVar.getDimensions()) != 0:
         raise TypeError("Error at line " + str(line) + ".\n" + "Dimension-Mismatch: Arrays are not supported.")
       fileL = fileLVar.getAddr()
+      fileL = context + str(fileL) if context != None else fileL
     else:
       fileL = self.compiler.addConst(fileL, 'CTE_FILE')
 
     if TypeR == 'ID':
       fileRVar = self.compiler.getVar(fileR)
+      context = None
       if fileRVar == None:
         fileRVar = self.compiler.getVarG(fileR)
         if fileRVar == None:
           raise NameError("Error at line " + str(line) + ".\n" + "Unknown identifier.")
+        else:
+          context = "G"
       
       if fileRVar.getType() != 'CTE_FILE':
         raise TypeError("Error at line " + str(line) + ".\n" + "Value is not a filename.")
       if len(fileRVar.getDimensions()) != 0:
         raise TypeError("Error at line " + str(line) + ".\n" + "Dimension-Mismatch: Arrays are not supported.")
       fileR = fileRVar.getAddr()
+      fileR = context + str(fileR) if context != None else fileR
     else:
       fileR = self.compiler.addConst(fileR, 'CTE_FILE')
 
     self.compiler.addQuad("WRITE", fileL, "", fileR)
     return opts
+
+  def read_func(self, ch, meta):
+    line = meta.line
+    readId = ch[0].value
+    if len(ch) == 1:
+      readType = 'CTE_STRING'
+    else:
+      readType = self.types[ch[1].value]
+    
+    readAddr = self.compiler.addVar(readId, readType)
+    self.compiler.addQuad("READ", readType, "", readAddr)
+    
+    return ch
+  
+  # def append_func(self, ch, meta):
+  #   line = meta.line
+  #   # CREA NUEVA
+
+  # def get_line(self, ch, meta):
+  #   print("ENTRA")
+  #   print(ch, meta)
+  #   return ch
+
+  # def get_word(self, ch, meta):
+  #   print("ENTRA")
+  #   print(ch, meta)
+  #   return ch
+

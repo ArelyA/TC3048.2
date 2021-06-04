@@ -1,0 +1,35 @@
+
+def factorial(int x):
+  if x <= 1:
+    return 1
+  else:
+    return x * (factorial(x - 1))
+
+print("Input Number: ")
+read(input, int)
+while input < 0:
+  print("Input Positive Number: ")
+  read(input, int)
+
+print("Recursive Factorial of", input, ":", factorial(input))
+
+count = 1
+n = 1
+
+if input == 0:
+   print("Cyclic (while) Factorial of", input, ": 1")
+else:
+  while count < input + 1:
+    n = n * count
+    count = count + 1
+  print("Cyclic (while) Factorial of", input, ":", n)
+
+n = 1
+
+
+if input == 0:
+   print("Cyclic (for) Factorial of", input, ": 1")
+else:
+  for i in range(1, input + 1):
+    n = n * i
+  print("Cyclic (for) Factorial of", input, ":", n)

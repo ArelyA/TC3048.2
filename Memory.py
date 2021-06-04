@@ -48,8 +48,6 @@ class Memory(deque):
     Returns next available memory slot
     """
     if(self.counterMem < self.maxMemLimit):
-      if index == 0:
-        print("AVAIL", self.counterMem)
       nextSlot = self.counterMem
       self.counterMem += index
       return nextSlot
@@ -60,8 +58,6 @@ class Memory(deque):
     Returns next available temporal memory slot
     """
     if(self.counterTemp < self.tempMemLimit):
-      if index == 0:
-        print("TEMP", self.counterTemp)
       nextSlot = self.counterTemp
       self.counterTemp += index
       return nextSlot
@@ -80,4 +76,3 @@ class Memory(deque):
   def release(self, mem, temp):
     self.counterMem = mem
     self.counterTemp = temp + self.memSize
-    print(self.counterMem, self.counterTemp)

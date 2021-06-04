@@ -4,7 +4,7 @@ class Stack(deque):
     """Stack implementation using deque container from the collections module"""
     def __init__(self, name):
         self.name = name
-        
+
     def __reduce__(self):
         return (self.__class__, (self.name,))
 
@@ -24,17 +24,18 @@ class Stack(deque):
         """
         Appends the element or elements at the end of the stack
         """
-        if(isinstance(x, str)):
-            self.append(x)
-        else:
-            try:
-                iterator = iter(x)
-            except TypeError:
-                # not iterable
-                self.append(x)
-            else:
-                # iterable
-                self.extend(x)
+        self.append(x)
+        # if(isinstance(x, str)):
+        #     self.append(x)
+        # else:
+        #     try:
+        #         iterator = iter(x)
+        #     except TypeError:
+        #         # not iterable
+        #         self.append(x)
+        #     else:
+        #         # iterable
+        #         self.extend(x)
     def top(self):
         """
         Returns the last element in the stack

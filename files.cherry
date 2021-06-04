@@ -1,0 +1,9 @@
+
+fileName = NEWTEST.txt
+
+
+#str = !Line -> fileName(1)
+
+str = fileName.getLine(1)
+
+

@@ -95,7 +95,7 @@ class Function(Table):
     else:
       self.signature.append(paramId)
   
-  def addVar(self, varId, varType, varAddr, elems):
+  def addVar(self, varId, varType, varAddr):
     """
     Add Variable to vars dict.
     """

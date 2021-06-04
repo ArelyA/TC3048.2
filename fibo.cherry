@@ -1,0 +1,45 @@
+
+
+def fibonacci(int x):
+  if x <= 1:
+    return x
+  else:
+    return (fibonacci(x - 1)) + (fibonacci(x - 2))
+
+print("Input Number: ")
+read(input, int)
+while input < 0:
+  print("Input Positive Number: ")
+  read(input, int)
+
+print("Recursive Fibonacci sequence upto",input,":", fibonacci(input))
+
+n1 = 0
+n2 = 1
+count = 0
+
+if input == 1:
+   print("Cyclic (while) Fibonacci sequence upto",input,":", n1)
+else:
+  while count < input:
+    nth = n1 + n2
+    n1 = n2
+    n2 = nth
+    count = count + 1
+  print("Cyclic (while) Fibonacci sequence upto",input,":", n1)
+
+n1 = 0
+n2 = 1
+
+if input == 1:
+   print("Cyclic (for) Fibonacci sequence upto",input,":", n1)
+else:
+  for n in range(input):
+    nth = n1 + n2
+    n1 = n2
+    n2 = nth
+    count = count + 1
+  print("Cyclic (for) Fibonacci sequence upto",input,":", n1)
+
+
+

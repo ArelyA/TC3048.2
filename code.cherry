@@ -22,7 +22,7 @@ for b in range(5):
 
 //print("FILE", "\n", g)
 # print(g + "STRING" + f)
-x = [1, 2, 6]
+x = [99, 92, 96]
 
 for b in x:
 	print(b)
@@ -30,10 +30,13 @@ for b in x:
 def func():
 	a = b
 	b = 1
+	print(12345)
 	return x	
 a = b
 h = ((g + g) + "qwerty" - "q") - "2345"
 h.write(NEWTEST.txt)
+
+print(1, func())
 
 def funcB(int param1[2], string p):
 	//param1 = param1 + 1
@@ -44,3 +47,6 @@ def funcB(int param1[2], string p):
 			return 2
 	else:
 		return 3
+
+for b in x:
+	print(b)

@@ -40,8 +40,8 @@ class Machine(object):
     self.returnV = None
     self.isReturn = False
     self.crumbs = Stack('Crumbs')
-    self.funcContext = Stack('Contexto')
-    self.funcContext.push('Global')
+    self.funcContext = Stack('ContextoFunc')
+    self.memContext = Stack('ContextoMem')
     self.constantes = None
     self.funciones = None
     self.cuadruplos = List('Cuadruplos')
@@ -50,6 +50,31 @@ class Machine(object):
     self.exprOps = ["*", "/", "+", "-", "not", "and", "or"] + self.compSizeL + self.compContL
     self.createTempsFolder()
 
+  
+  def restoreConstantes(self):
+    self.memory.popConst(len(self.constantes))
+    for tipo in self.constantes:
+      for constante in self.constantes[tipo]:
+        self.memory[self.constantes[tipo][constante]] = constante
+        self.memory.popConst()
+  
+  def restore(self):
+    self.openObj()
+    self.restoreConstantes()
+    self.funcContext.push('Global')
+    self.saveMemContext()
+    func = self.funciones['Global']
+    self.memory.popAvail(func.sizeA)
+    self.memory.popTemp(func.sizeT)
+  
+  def saveMemContext(self):
+    func = self.funciones[self.funcContext.top()]
+    self.memContext.push((func.addr, func.addrTemp))
+  
+  def restoreMemContext(self):
+    old = self.memContext.pop()
+    self.memory.release(old[0], old[1])
+  
   def createTempsFolder(self):
     path = os.path.join(os.path.dirname(__file__) + "/", "tmp")
     try:
@@ -75,6 +100,7 @@ class Machine(object):
     try:
       compiler = Compiler(self.mem, self.memTemp, self.memConst)
       tree = lexer.parse(code)
+      # print(tree.pretty())
       transformer = PassiveSyntax(compiler)
       transformer.transform(tree)
       compiler.compile(self.source[:-7])
@@ -101,9 +127,9 @@ class Machine(object):
   def addrContext(self, addr):
     temp = self.memory.memSize
     if addr >= temp:
-      addr = addr + self.funciones[self.funcContext.top()].addrTemp
+      addr = addr + self.memContext.top()[1]
     else:
-      addr = addr + self.funciones[self.funcContext.top()].addr
+      addr = addr + self.memContext.top()[0]
     return addr
   
   def getFilename(self, filename):
@@ -136,29 +162,37 @@ class Machine(object):
         G#
         """
         addr = int(addr[1:])
+        return addr
       elif addr[0] == '(':
         """
         (#)
         """
-        addr = self.addrContext(self.memory[int(addr[1:-1])])
+        try:
+          addr = self.readAddr(self.memory[int(addr[1:-1])])
+        except:
+          addr = self.readAddr(addr[1:-1])
+        
       else:
         """
          #
         """
-        addr = self.addrContext(int(addr))
-    
+        addr = int(addr)
+
+    if addr >= self.memory.tempMemLimit:
+      return addr
+    addr = self.addrContext(addr)
     return addr
   
   def retrieveSingle(self, val):
     """"""
-    try:
-      lVal = self.memory[self.readAddr(val)]
-      lType = self.constantes[lVal]['type']
-      lVal = convert(lVal, lType)
-    except:
-      lVal = self.memory[self.readAddr(val)]
-      lType = None
-    return lVal, lType
+    lVal = self.memory[self.readAddr(val)]
+    for lType in self.constantes:
+      lValT = self.constantes[lType].get(lVal, None)
+      if lValT != None:
+        lVal = convert(lVal, lType)
+        return lVal, lType
+    
+    return lVal, None
 
   def tempFile(self, filename):
     dir = os.path.dirname(__file__) + '/'
@@ -169,14 +203,15 @@ class Machine(object):
     return fTemp
   
   def addConst(self, constId, constType):
-    constVar = self.constantes.get(str(constId), None)
+    "Adds constant to constants dictionary"
+    constVar = self.constantes[constType].get(str(constId), None)
     
     if(constVar == None):
       constAddr = self.memory.popConst()
-      self.constantes[str(constId)] = {"addr": constAddr, "type": constType}
-      self.memory[constAddr] = convert(constId, constType)
+      self.constantes[constType][str(constId)] = constAddr
+      self.memory[constAddr] = constId
     else:
-      constAddr = constVar['addr']
+      constAddr = constVar
 
     return constAddr
 
@@ -188,6 +223,7 @@ class Machine(object):
       destAddr = self.readAddr(dest)
       self.memory[destAddr] = self.memory[lAddr]
       self.line += 1
+      
     elif op in self.exprOps:
       if op == '*':
         """
@@ -210,6 +246,11 @@ class Machine(object):
         lVal, lType = self.retrieveSingle(left)
         rVal, rType = self.retrieveSingle(right)
         destAddr = self.readAddr(dest)
+        context = None
+        if isinstance(rVal, str) and rType in ['CTE_INT', 'CTE_FLOAT']:
+          rVal = int(rVal[1:])
+          context = "G"
+      
         if lType == 'CTE_FILE':
           self.addConst(lVal, 'CTE_FILE')
           lValTemp = self.tempFile(lVal)
@@ -225,6 +266,7 @@ class Machine(object):
           result = evaluate(op, lVal, rVal)
           self.line += 1
         self.memory[destAddr] = result
+        result = context + str(result) if context != None else result
         if self.isReturn:
           self.returnV = "(" + str(result) + ")"
       elif op == '-':
@@ -243,6 +285,7 @@ class Machine(object):
           removeStrfromFile(lValTemp, rVal)
           result = lValTemp
         else:
+
           result = evaluate(op, lVal, rVal)
         self.memory[destAddr] = result
         self.line += 1
@@ -298,23 +341,25 @@ class Machine(object):
       lVal, lType = self.retrieveSingle(left)
       rVal, rType = self.retrieveSingle(right)
       dVal, dType = self.retrieveSingle(dest)
-
       if lVal >= rVal and lVal < dVal:
         self.line += 1
         if self.isReturn:
           self.returnV = None
       else:
-        print("Index out of range.")
+        raise IndexError("Index out of range.")
         self.line = len(self.cuadruplos) - 1
 
     elif op == 'PRINT':
       """"""
+
       if dest == '[':
-        print(dest, end = self.end)
-        self.end = ","
+        print(dest, end = "")
+        self.end = ""
       elif dest == ']':
+        print(dest, end = " ")
         self.end = " "
-        print(dest, end = self.end)
+      elif dest == ',':
+        print(dest, end = " ")
       elif dest == "\n":
         print("\n", end = "")
       else:
@@ -323,7 +368,9 @@ class Machine(object):
           printFile(dVal)
           print("", end = self.end)
         else:
+          
           print(dVal, end = self.end)
+      
       self.line += 1
     elif op == 'GOTO':
       """
@@ -344,16 +391,21 @@ class Machine(object):
         self.line += 1
     elif op == 'ERA':
       """
+      ERA, left, , 
+      """
       self.funcContext.push(left)
       func = self.funciones[left]
       addr = self.memory.popAvail(0)
-      tempAddr = self.memory.popTemp(0) - self.mem
+      addrTemp = self.memory.popTemp(0) - self.mem
       func.addr = addr
       func.addrTemp = addrTemp
       self.memory.popAvail(func.sizeA)
       self.memory.popTemp(func.sizeT)
-      """
+      self.saveMemContext()
+      self.line += 1
     elif op == 'PARAM':
+      """
+      PARAM, ADDR, #,
       """
       func = self.funciones[self.funcContext.top()]
       # type, dims, addr
@@ -362,55 +414,52 @@ class Machine(object):
       paramAddr = param.getAddr()
       paramDims = param.getDimensions()
       pVal = self.readAddr(paramAddr)
-      currentContext = self.funcContext.pop()
+      currentContext = self.memContext.pop()
       lVal = self.readAddr(left)
-      self.funcContext.push(currentContext)
-      if paramDims == None:
+      self.memContext.push(currentContext)
+      if len(paramDims) == 0:
         self.memory[pVal] = self.memory[lVal]
       else:
-        for idx in range(paramDims.sup):
-          self.memory[pVal + idx] = self.memory[lVal + idx]
-      """
+        for dim in paramDims:
+          for idx in range(dim.sup):
+            self.memory[pVal + idx] = self.memory[lVal + idx]
+      self.line += 1
     elif op == 'GOSUB':
       """
-      self.crumbs.push(self.line + 1)
-      self.line = self.funciones[self.funcContext.top()].getIp()
+      GOSUB, funcId
       """
+      self.crumbs.push(self.line + 1)
+      self.line = self.funciones[left].getIp()
     elif op == 'ENDFUNC':
       """
-      func = self.funciones[self.funcContext.top()]
-      self.memory.release(func.addr, func.addrTemp)
-      self.funcContext.pop()
-      self.line = self.crumbs.pop()
       """
+      self.funcContext.pop()
+      self.restoreMemContext()
+      self.line = self.crumbs.pop()
     elif op == 'RETURN':
       """
       pasa valores de un contexto a otro
-      busca var 1func e iguala contenidos
       """
       addr = self.readAddr(self.funciones[self.funcContext.top()].getReturnAddr())
       destAddr = self.readAddr(dest)
       self.memory[addr] = self.memory[destAddr]
-      print("RETURN")
       self.line += 1
     elif op == 'RETURNSTART':
       """
       RETURN FOR ARRAY
       continua hasta llegar a RETURNEND
       pasa valores de un contexto a otro
-      busca var 1func e iguala contenidos
-      idx = 0
       """
       idx = 0
       self.isReturn = True
       addr = self.readAddr(self.funciones[self.funcContext.top()].getReturnAddr())
+      self.line += 1
       while self.cuadruplos[self.line].op != "RETURNEND":
-        print('RETURNSTART', self.cuadruplos[self.line].op)
         self.instrSwitch(self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
-        if self.ReturnV != None:
+        if self.returnV != None:
           self.memory[addr + idx] = self.memory[self.readAddr(self.returnV) + idx]
           idx += 1
-      print('RETURNEND', self.cuadruplos[self.line].op)
+    elif op == 'RETURNEND':
       self.line += 1
       self.isReturn = False
     elif op == 'WRITE':
@@ -429,6 +478,11 @@ class Machine(object):
       left = type
       dest = dest
       """
+      var = input()
+      destAddr = self.readAddr(dest)
+      self.addConst(var, left)
+      self.memory[destAddr] = convert(var, left)
+      self.line += 1
     elif op == 'SIZE':
       """
       SIZE, left, , dest
@@ -452,52 +506,48 @@ class Machine(object):
       """"""
     elif op == 'APPEND':
       """"""
+    elif op == 'CREATE':
+      """"""
+    elif op == 'DELETE':
+      """"""
     else:
       print("Unknown instruction " + op)
       self.line = len(self.cuadruplos) - 1
-
-  def restoreConstantes(self):
-    self.memory.popConst(len(self.constantes))
-    for constante in self.constantes:
-        self.memory[self.constantes[constante]['addr']] = constante
-  
-  def restore(self):
-    self.openObj()
-    self.restoreConstantes()
 
   def run(self):
     if len(sys.argv) != 2:
       print("Was expecting 1 file to compile, received", len(sys.argv) - 1, ".")
     else:
-      try:
-        self.source = sys.argv[1]
-        self.compile()
-        self.restore()
-        self.memory.popAvail(self.funciones[self.funcContext.top()].sizeA)
-        self.memory.popTemp(self.funciones[self.funcContext.top()].sizeT)
-        """"""
-        print(self.cuadruplos)
-        with open("quad_log.txt", 'w') as f:
-            print(self.cuadruplos, file = f)
+      # try:
+      self.source = sys.argv[1]
+      self.compile()
+      self.restore()
+      self.memory.popAvail(self.funciones[self.funcContext.top()].sizeA)
+      self.memory.popTemp(self.funciones[self.funcContext.top()].sizeT)
+      """"""
+      with open("quad_log.txt", 'w') as f:
+        print(self.cuadruplos, file = f)
+      
+      with open("constini_log.txt", 'w') as f:
+        print(self.constantes, file = f)
+      
+      with open("func_log.txt", 'w') as f:
+        print(self.funciones, file = f)
         
-        with open("func_log.txt", 'w') as f:
-            print(self.funciones, file = f)
-        
-        while self.cuadruplos[self.line].op != "ENDPROG":
-          # print(self.line)
-          
-          self.instrSwitch(self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
-          with open("memory_log.txt", 'w') as f:
-            print(self.memory, file = f)
-        print("ENDPROG")
-        # except Exception as e:
-        #   print(e)
-        #   with open("memory_log.txt", 'w') as f:
-        #     print(self.memory, file = f)
-
-      except Exception as e:
-        print(e)
-    self.deleteTempsFolder()
+      while self.cuadruplos[self.line].op != "ENDPROG":
+        # print(self.line, self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
+        # print(self.line)
+        self.instrSwitch(self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
+        with open("memory_log.txt", 'w') as f:
+          print(self.memory, file = f)
+      print("ENDPROG")
+      # except Exception as e:
+      #   print(e)
+      #   with open("memory_log.txt", 'w') as f:
+      #     print(self.memory, file = f)
+      self.deleteTempsFolder()
+      with open("const_log.txt", 'w') as f:
+        print(self.constantes, file = f)
     # RUN
 
 

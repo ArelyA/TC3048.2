@@ -1,0 +1,1 @@
+{'CTE_FLOAT': {}, 'CTE_INT': {'1': 3001}, 'CTE_BOOL': {}, 'CTE_FILE': {'NEWTEST.txt': 3000}, 'CTE_STRING': {}}

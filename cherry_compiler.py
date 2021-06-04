@@ -24,8 +24,9 @@ class Compiler(object):
     self.memTemp = memTemp
     self.memConst = memConst
     self.memory = Memory('Memory', self.mem, self.memTemp, self.memConst)
-    self.constantes = {}
-    self.reservadas = ["def", "read", "write", "print", "in", "for", "if", "else", "while", "len", "norm", "clean", "find", "range", "count", "size", "join", "append", "create", "delete"]
+    self.constantes = {'CTE_FLOAT' : {}, 'CTE_INT' : {}, 'CTE_BOOL' : {}, 'CTE_FILE': {}, 'CTE_STRING' : {}}
+    self.reservadas = ["def", "read", "write", "print", "in", "for", "if", "else", "while", "len", "norm", "clean", "find", "range", "count", "size", "join", "append", "create", "delete", "int", "string", "float", "bool", "file"]
+    self.displayTypes = {'CTE_INT' : 'int', 'CTE_FLOAT' : 'float', 'CTE_STRING' : 'string', 'CTE_FILE': 'file', 'CTE_BOOL' : 'bool'}
     self.addFunc('Global')
 
   def fill(self, jmp = None, idx = None):
@@ -86,18 +87,20 @@ class Compiler(object):
     return self.jumps.top()
   
   def addConst(self, constId, constType):
-    constVar = self.constantes.get(str(constId), None)
+    "Adds constant to constants dictionary"
+    constVar = self.constantes[constType].get(str(constId), None)
     
     if(constVar == None):
       constAddr = self.memory.popConst()
-      self.constantes[str(constId)] = {"addr": constAddr, "type": constType}
-      self.memory[constAddr] = convert(constId, constType)
+      self.constantes[constType][str(constId)] = constAddr
+      self.memory[constAddr] = constId
     else:
-      constAddr = constVar['addr']
+      constAddr = constVar
 
     return constAddr
   
   def getFunc(self, funcId):
+    "Returns a function by its name, if not found returns None"
     return self.funciones.get(funcId, None)
 
   def addFunc(self, funcId):
@@ -113,6 +116,7 @@ class Compiler(object):
       raise RuntimeError("Cannot define method more than once")
   
   def addParam(self, paramId):
+    "Adds a parameter to the current function in context"
     self.funciones[self.funcContext.top()].addParam(paramId)
 
   def setFuncTipo(self, funcType):
@@ -141,7 +145,12 @@ class Compiler(object):
     """
     funcId = self.funcContext.top()
     func = self.funciones[funcId]
-    self.memory.release(func.addr, func.addrTemp)
+    addr = func.addr
+    funcVar = self.getVarG("1" + funcId)
+    if funcVar != None:
+      dims = funcVar.getDimensions()
+      addr = addr + sum(dim.sup for dim in dims) if len(dims) > 0 else 1
+    self.memory.release(addr, func.addrTemp)
     self.funcContext.pop()
     return func
   
@@ -153,7 +162,22 @@ class Compiler(object):
     var = self.funciones[self.funcContext.top()].getVar(varId)
     if(var == None):
       varAddr = self.popAvail(elem) - self.funciones[self.funcContext.top()].addr # guarda direcciones locales
-      self.funciones[self.funcContext.top()].addVar(varId, varType, varAddr, elem)
+      self.funciones[self.funcContext.top()].addVar(varId, varType, varAddr)
+    elif var.getType() == None:
+      var.setType(varType)
+      varAddr = var.getAddr()
+    elif var.getType() == varType:
+      varAddr = var.getAddr()
+    else:
+      raise TypeError("Type-Mismatch: " + self.displayTypes[varType] + " cannot be assigned to " +  self.displayTypes[var.getType()])
+    return varAddr
+  
+  def addFuncVar(self, varType, elem = 1):
+    varId = "1" + self.funcContext.top()
+    var = self.funciones['Global'].getVar(varId)
+    if(var == None):
+      varAddr = self.funciones[self.funcContext.top()].getAddr() - self.funciones['Global'].addr # guarda direcciones locales
+      self.funciones['Global'].addVar(varId, varType, varAddr)
     elif var.getType() == None:
       var.setType(varType)
       varAddr = var.getAddr()
@@ -162,11 +186,13 @@ class Compiler(object):
     else:
       raise TypeError("Type-Mismatch: " + varType + " cannot be assigned to " +  var.getType())
     return varAddr
+
+
   
   def addVarArr(self, tipo, elems):
     """Adds variable to store ARRAYS"""
     varAddr = self.popTemp(elems) - self.funciones[self.funcContext.top()].addrTemp
-    self.funciones[self.funcContext.top()].addVar(str(varAddr), tipo, varAddr, elems)
+    self.funciones[self.funcContext.top()].addVar(str(varAddr), tipo, varAddr)
     return str(varAddr)
 
   def getVar(self, varId):
@@ -175,8 +201,6 @@ class Compiler(object):
 
   def getVarG(self, varId):
     """Gets variable from var dict of the global context"""
-    if self.funcContext.top() == "Global":
-      return None
     return self.funciones["Global"].getVar(varId)
   
   def getTemp(self):
@@ -188,6 +212,7 @@ class Compiler(object):
     self.idx += 1
   
   def compile(self, name):
+    "Creates object file"
     filename = os.path.join(os.path.dirname(__file__) + '/', name + '.pkl')
     with open(filename, 'wb') as output:
       dill.dump(self.constantes, output, -1)

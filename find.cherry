@@ -1,0 +1,22 @@
+
+arr = ["uno", "tres", "cinco", "siete", "cero", "1"]
+index = 0
+res = -1
+//var = "uno"
+print("Enter a value")
+read(var, string)
+while index < 6:
+  if (arr[index]) == var:
+    res = index
+  index = index + 1
+
+if res >= 0:
+  print("element is in position:", res)
+else:
+  print("It is not in the list")
+
+list = [1, 2, 3, 4, 5, 6]
+sum = 0
+for elem in list:
+  sum = sum + elem
+print(sum)

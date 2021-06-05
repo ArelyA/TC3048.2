@@ -2,9 +2,173 @@
 
 ## Status: In Progress
 
-El proyecto fue redefinido. Se a establecido un scope más alcanzable y se está trabajando en el diseño de un MVP de funcionalidad. A grandes rasgos se planea definir un lenguaje que permita realizar un análisis básico de **lenguaje natural** del contenido de archivos de texto. 
+***UPDATED 04.06.2021***
 
-La declaración de variables se hará de forma automática; en cuanto estas reciban su valor (asignación) se definirá su tipo y se separará su identificador. Los tipos de datos que se manejarán serán: bool, int, float, string y file (extensión .txt). También se manejarán listas de cada uno de estos tipos. Las listas estarán limitadas a UNA dimensión.
+El proyecto consiste en la realización de un lenguaje que permita manejar archivos con mayor facilidad. El manejo consiste en la lectura y modicicación de archivos. Además, permitirá algunas funciones para la creación, lectura y modificación de variables tipo string.
+
+Lo descrito anteriormente es una extensión de un lenguaje básico basado en python. Se espera que maneje estructuras básicas como lo son: arreglos (unidimensionales), variables, constantes (literales),  estatutos de decisión con alternativa (if-else), estatutos de ciclos (condicionales y no-condicionales), expresiones, funciones de lectura y escritura, declaraciones de variables y declaración y llamada de funciones
+
+
+### Manual de usuario
+
+#### Tipos de datos
+
+* **int** : número entero *\**
+
+* **float** : número flotante *\**
+
+* **bool** :  valor booleano True o False
+
+* **string** :  Cadena de carateres, entre comillas dobles
+
+* **file** : Nombre de archivo, sin comillas. Solo acepta html, htm y txt *\*\**
+
+*\* Los valores numéricos aceptan signos*
+
+*\*\* En proceso de incluir más extensiones*
+
+#### Comentarios
+
+```
+# Comentario
+// Comentario
+/*
+Comentario
+largo
+*/
+```
+
+#### Estatutos Simples
+
+##### Asignaciones
+
+```python
+str_var = "hola"
+file = test.html
+arr = [1, 2, 3]
+integer = 1
+arr[integer] = 3
+number = 1 + 3 * 5
+```
+
+##### Lectura y escritura
+
+```python
+print(1 + 2) # Imprimir arreglos
+print(arr, str_var, number) # Imprimir varios datos de distintos tipos
+print(test.txt) # Imprimir archivos
+
+read(a) # Lee un string y lo almacena en a
+read(b, int) # Lee un entero y lo almacena en b, acepta todos los tipos
+```
+
+#### Funciones especiales
+
+##### Manejo de archivos y strings
+
+* Concatenación de archivos file + file
+
+  ```python
+  file1 = C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.txt
+  
+  file2 = C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.html
+  
+  newfile = file1 + file2
+  ```
+
+* Concatenacion de string al final de un archivo file + string
+
+  ```python 
+  filename = file1 + "LINEA AL FINAL"
+  ```
+
+* Eliminación de todas las ocurrencias de un string en un archivo u otro string
+
+  ```` python
+  filename = filename - "A"
+  ````
+
+* Repetición de strings
+
+  ```python
+  str = "A" * (1 + 2 * 5)
+  ```
+
+* Escritura de archivos
+
+  ```python
+  newfile.write(newfile.txt)
+  ```
+
+#### Estatutos condicionales
+
+```python
+if str_var == "hola" :
+    print(arr)
+else:
+    print(number)
+```
+
+#### Ciclos
+
+##### Condicionales
+
+```python
+while integer < 6:
+    integer = integer + 1
+```
+
+##### No-condicionales
+
+Se puede iterar arreglos o un rango de números. Los rangos aceptan de 1 a 3 valores.
+
+* `range(end)`
+* `range(start, end)`
+* `range(start, end, step)`
+
+```python
+for elemento in arr:
+    print(elemento)
+
+for elemento in [1,3,6]:
+    print(elemento + 1)
+
+for i in range(6):
+    print(i)
+```
+
+#### Funciones
+
+##### Definición
+
+```python
+def funcRetorno(int param, float param2[10]):
+    if (param * 5) < 10:
+    	return param2[param * 5]
+    else:
+        return param * 1.0
+    
+def funcVoid(string param):
+    print(param * 5)
+```
+
+##### Llamada
+
+```python
+print(funcRetorno(2))
+
+funcVoid(str_var)
+```
+
+
+
+### Notas (01.05.2021)
+
+*OLD*
+
+~~El proyecto fue redefinido. Se a establecido un scope más alcanzable y se está trabajando en el diseño de un MVP de funcionalidad. A grandes rasgos se planea definir un lenguaje que permita realizar un análisis básico de **lenguaje natural** del contenido de archivos de texto.
+
+La declaración de variables se hará de forma automática; en cuanto estas reciban su valor (asignación) se definirá su tipo y se separará su identificador. Los tipos de datos que se manejarán serán: bool, int, float, string y file (extensión .txt). También se manejarán listas de cada uno de estos tipos. Las listas estarán limitadas a UNA dimensión.~~
 
 | Tipo                      | Contenido                                                    |
 | ------------------------- | ------------------------------------------------------------ |
@@ -81,8 +245,6 @@ Funciones especiales:
 | func_unigram | unigram   | regresa las veces que se repite cada palabra                 |
 | func_bigram  | bigram    | regresa las veces que aparece un par de palabras consecutivas |
 | func_ngram   | ngram     | regresa las veces que aparece un conjunto de n palabras consecutivas |
-
-### Notas (01.05.2021)
 
 * Se generaron algunos de los diagramas necesarios y se continua definiendo el lenguaje.
 * A la hora de compilar no se requerirá especificar el nombre del programa ni se va a pedir una función main; la función principal tomará el nombre del archivo sin incluir la extensión.

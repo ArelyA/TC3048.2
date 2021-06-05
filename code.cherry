@@ -1,12 +1,13 @@
 g = C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.txt
 
-w = "" + " hola" * 5
+w = "1" + " hola" * 5
 
 print(w)
 
 f = g
 
-print("FILE", "\n", g)
+print("FILEF", "\n", f)
+print("FILEG", "\n", g - "9")
 
 h = ((g + g) + "qwerty" - "q") - ("2345" + w)
 h.write(Archivo.txt)

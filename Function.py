@@ -131,15 +131,10 @@ class Variable(Table):
     
     
   def __repr__(self):
-    #dims = "None" if self.dims == None else self.dims
+
     type = "None" if self.type == None else "'" + self.type + "'"
     return "{type: '" + type + "', dims: " + "->".join(str(dim) for dim in self.dims) + ", addr: " + str(self.addr) + "}"
 
-  # def getType(self):
-  #   return self.type
-
-  # def setType(self, varType):
-  #   self.type = varType
 
   def getAddr(self):
     """
@@ -161,10 +156,6 @@ class Variable(Table):
     Current implementation for 1-D arrays
     """
     self.dims.append(Dimension(inf, sup))
-    # if len(self.dim) > 1:
-    #   for idx, dim in enumerate(self.dims.reverse()[1:]):
-    #     nextOffset = self.dims[idx - 1].offset if self.dims[idx - 1].offset != 0 else 1
-    #     self.dims[idx].offset = nextOffset * (self.dims[idx - 1].sup - self.dims[idx - 1].inf + 1)
     
 
 class Dimension(object):

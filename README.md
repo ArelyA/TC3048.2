@@ -69,9 +69,9 @@ read(b, int) # Lee un entero y lo almacena en b, acepta todos los tipos
 * Concatenación de archivos file + file
 
   ```python
-  file1 = C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.txt
+  file1 = /tests/test.txt
   
-  file2 = C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.html
+  file2 = /tests/test.html
   
   newfile = file1 + file2
   ```

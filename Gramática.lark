@@ -1,10 +1,8 @@
 start: (stmt_ext)* end_prog
 end_prog: -> end_prog
 
-
 stmt_ext: stmt
   | def_func
-
 
 simp_stmt: asign
   | print
@@ -12,14 +10,11 @@ simp_stmt: asign
   | call_func 
   | write 
 
-
 comp_stmt: if_else
   | for
   | while
 
 ?stmt: _NEWLINE | comp_stmt | simp_stmt
-
-
 
 block: _NEWLINE _INDENT stmt_block
 
@@ -27,38 +22,42 @@ stmt_block: stmt stmt_block
   | _DEDENT
   | return _NEWLINE* _DEDENT
   
-
-
 ?asign: asign_simp
   | asign_item
 
-
 asign_simp: id asign_op asign_simp_opt 
+
 ?asign_simp_func: -> asign_simp_func
+
 ?asign_simp_opt: var_it
   | expresion asign_simp_func
 
 !asign_op: "=" -> asign_op
 
 asign_item: id "[" expresion asign_item_index asign_op asign_item_opt 
+
 asign_item_func: -> asign_item_func
+
 asign_item_index: "]" -> asign_item_index
+
 asign_item_opt: expresion asign_item_func 
 
-
-
 call_func: call_func_name "(" [call_func_opt] ("," call_func_opt)* call_func_param 
+
 call_func_opt: expresion
 
-call_func_name: ID -> call_func_name // ADD TOPE
+call_func_name: ID -> call_func_name 
+
 call_func_param: ")" -> call_func_param
 
 print: "print" put_fondo print_opt ("," print_opt)* ")" print_func
+
 !put_fondo: "(" -> put_fondo
+
 print_func: -> print_func
+
 print_opt: expresion
   | var_it
-
 
 write: write_opt ".write" "(" write_opt ")" -> write_func
 
@@ -67,45 +66,59 @@ write: write_opt ".write" "(" write_opt ")" -> write_func
 
 read: "read" "(" id ["," TYPE_OPT] ")" -> read_func 
 
-TYPE_OPT: "int"
-  | "float"
-  | "string"
-  | "file"
-  | "bool"
-
 if_else: "if" expresion if_func block [else_func ":" block] endif
+
 !if_func: ":" -> if_func
+
 !else_func: "else" -> else_func
+
 endif: -> endif
 
 while: "while" while_func expresion while_cond block while_end
+
 while_func: -> while_func
+
 while_cond: ":" -> while_cond
+
 while_end: -> while_end
 
 for: "for" id "in" for_opt for_check block for_end
+
 for_check: ":" -> for_check 
+
 for_end: -> for_end
+
 for_opt: var_it_ext
   | range 
 
 range: "range" range_tope expresion ["," expresion ["," expresion]] range_func
 
 range_tope: "(" -> range_tope 
+
 range_func: ")" -> range_func 
 
 
 ?def_func: "def" def_func_name "(" [def_func_param ("," def_func_param)*] ")" ":" block def_func_end
+
 return: ret def_func_opt 
+
 ret: "return" -> return_line
+
 def_func_name: ID -> def_func_name 
+
 def_func_param: type_opt id "[" cte_int def_func_param_it
   | type_opt def_func_param_func
+
 def_func_param_func: ID -> def_func_param_func
+
 type_opt: TYPE_OPT -> type_opt
+
 !def_func_param_it: "]" -> def_func_param_it
+
 def_func_type: -> def_func_type
+
 def_func_end: -> def_func_end
+
 def_func_opt: expresion def_func_type
   | var_it def_func_type
 
@@ -119,17 +132,18 @@ def_func_opt: expresion def_func_type
   | id
   
 ?cte_int: CTE_INT -> cte_int
+
 ?var_it: "[" var_it_fondo var_it_opt ("," var_it_opt)* var_it_asign
 
 var_it_fondo: -> var_it_fondo 
+
 !var_it_asign: "]" -> var_it_asign 
 
 ?cte_file: CTE_FILE -> file_func
+
 ?var_it_opt: expresion
 
-
 ?var_str: CTE_STRING -> string_func
-
   
 ?var_it_ext: var_it
   | id
@@ -137,27 +151,28 @@ var_it_fondo: -> var_it_fondo
 ?id: ID -> id_func
 
 ?expresion: expresion_and or_func (or_func_op expresion_and or_func)*
+
 ?expresion_and: ass and_func (and_func_op ass and_func)*
+
 ?and_func_op: EXPRESION_AND -> and_func_op
+
 ?and_func: -> and_func
+
 ?or_func_op: EXPRESION_OR -> or_func_op
+
 ?not_func: -> not_func
+
 ?or_func: -> or_func
-EXPRESION_AND: "and"
-EXPRESION_OR: "or"
+
+
 ?ass: comp not_func
   | not_func_op comp not_func
-NOT: "not"
+
+
 ?not_func_op: NOT -> not_func_op
 ?comp: exp comp_func [comp_func_op exp comp_func]
 ?comp_func_op: COMP_OPT -> comp_func_op
 ?comp_func: -> comp_func
-COMP_OPT:">="
-  | "<="
-  | "=="
-  | "!="
-  | "<"
-  |  ">"
 
 ?exp: term exp_func
   | term exp_func exp_opt exp
@@ -165,35 +180,73 @@ COMP_OPT:">="
 ?exp_opt: EXP_OPT  -> exp_func_op
 
 ?exp_func: -> exp_func
-EXP_OPT: "+"
-  | "-"
+
 ?term: factor term_func
   | factor term_func term_opt term 
+
 ?term_opt: TERM_OPT -> term_func_op
+
 ?term_func: -> term_func
-TERM_OPT: "*" | "/" 
+
 ?factor: "(" factor_paren expresion ")" factor_paren_end
   | var_cte
+
 ?factor_paren: -> factor_paren
+
 ?factor_paren_end: -> factor_paren_end
+
+TYPE_OPT: "int"
+  | "float"
+  | "string"
+  | "file"
+  | "bool"
+
+NOT: "not"
+
+COMP_OPT:">="
+  | "<="
+  | "=="
+  | "!="
+  | "<"
+  |  ">"
+
+EXP_OPT: "+"
+  | "-"
+
+TERM_OPT: "*" | "/" 
+
 CTE_BOOL.6: "True"  | "False" // BOOL terminal
+
 CTE_FILE: (/(\.{0,2}\/){0,1}/ | /C:\//)~0..1 /[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\./ (/txt/ | /html/ | /htm/)~1
 
+EXPRESION_AND: "and"
+
+EXPRESION_OR: "or"
 
 ID.-1:/[a-zA-Z_]\w*/  // ID terminal
-%import common.ESCAPED_STRING -> CTE_STRING // STRING terminal
-%import common.SIGNED_INT -> CTE_INT // INT terminal
-%import common.SIGNED_FLOAT -> CTE_FLOAT //FLOAT terminal
-%import common.SH_COMMENT
-%import common.CPP_COMMENT
-%import common.C_COMMENT
 
 _NEWLINE: /(\r?\n[\t ]*)+/
+
+%import common.ESCAPED_STRING -> CTE_STRING // STRING terminal
+
+%import common.SIGNED_INT -> CTE_INT // INT terminal
+
+%import common.SIGNED_FLOAT -> CTE_FLOAT //FLOAT terminal
+
+%import common.SH_COMMENT
+
+%import common.CPP_COMMENT
+
+%import common.C_COMMENT
+
 %ignore /[\t \f]+/  // WS
+
 %ignore /\\[\t \f]*\r?\n/   // LINE_CONT
 
-
 %ignore SH_COMMENT
+
 %ignore  CPP_COMMENT
+
 %ignore  C_COMMENT
+
 %declare _INDENT _DEDENT

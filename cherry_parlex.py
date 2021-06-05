@@ -14,18 +14,6 @@ import sys
 import dill 
 logger.setLevel(logging.DEBUG)
 
-# MVP
-# Create Machine class
-# Add Run method that receives file
-# Add Start method for user input
-# Compiler outputs a dict
-"""
-out = {
-  constantes: compiler.constantes,
-  funciones : compiler.funciones,
-  cuadruplos : compiler.cuadruplos
-}
-"""
 
 class Machine(object):
   def __init__(self):
@@ -331,6 +319,15 @@ class Machine(object):
         result = evaluate(op, lVal)
         self.memory[destAddr] = result
         self.line += 1
+      elif op == '/':
+        lVal, lType = self.retrieveSingle(left)
+        rVal, rType = self.retrieveSingle(right)
+        if lVal == 0 or rVal == 0:
+          raise ZeroDivisionError("Cannor perform a division by zero.")
+        destAddr = self.readAddr(dest)
+        result = evaluate(op, lVal, rVal)
+        self.memory[destAddr] = result
+        self.line += 1
     elif op == 'VER':
       """
       VER, left, right, dest
@@ -483,32 +480,6 @@ class Machine(object):
       self.addConst(var, left)
       self.memory[destAddr] = convert(var, left)
       self.line += 1
-    elif op == 'SIZE':
-      """
-      SIZE, left, , dest
-      left = filename
-      """
-    elif op == 'LEN':
-      """"""
-    elif op == 'COUNT':
-      """"""
-    elif op == 'GETLINE':
-      """"""
-    elif op == 'GETWORD':
-      """"""
-    elif op == 'FIND':
-      """"""
-    elif op == 'SUBSTR':
-      """"""
-    elif op == 'CLEAN':
-      """"""
-    elif op == 'NORM':
-      """"""
-    elif op == 'APPEND':
-      """"""
-    elif op == 'CREATE':
-      """"""
-    elif op == 'DELETE':
       """"""
     else:
       print("Unknown instruction " + op)
@@ -518,33 +489,33 @@ class Machine(object):
     if len(sys.argv) != 2:
       print("Was expecting 1 file to compile, received", len(sys.argv) - 1, ".")
     else:
-      # try:
-      self.source = sys.argv[1]
-      self.compile()
-      self.restore()
-      self.memory.popAvail(self.funciones[self.funcContext.top()].sizeA)
-      self.memory.popTemp(self.funciones[self.funcContext.top()].sizeT)
-      """"""
-      with open("quad_log.txt", 'w') as f:
-        print(self.cuadruplos, file = f)
-      
-      with open("constini_log.txt", 'w') as f:
-        print(self.constantes, file = f)
-      
-      with open("func_log.txt", 'w') as f:
-        print(self.funciones, file = f)
+      try:
+
+        self.source = sys.argv[1]
+        self.compile()
+        self.restore()
+        self.memory.popAvail(self.funciones[self.funcContext.top()].sizeA)
+        self.memory.popTemp(self.funciones[self.funcContext.top()].sizeT)
+        """"""
+        with open("quad_log.txt", 'w') as f:
+          print(self.cuadruplos, file = f)
         
-      while self.cuadruplos[self.line].op != "ENDPROG":
-        # print(self.line, self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
-        # print(self.line)
-        self.instrSwitch(self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
+        with open("constini_log.txt", 'w') as f:
+          print(self.constantes, file = f)
+        
+        with open("func_log.txt", 'w') as f:
+          print(self.funciones, file = f)
+          
+        while self.cuadruplos[self.line].op != "ENDPROG":
+          self.instrSwitch(self.cuadruplos[self.line].op, self.cuadruplos[self.line].left, self.cuadruplos[self.line].right, self.cuadruplos[self.line].dest)
+          with open("memory_log.txt", 'w') as f:
+            print(self.memory, file = f)
+
+      except Exception as e:
+        print(e)
         with open("memory_log.txt", 'w') as f:
           print(self.memory, file = f)
-      print("ENDPROG")
-      # except Exception as e:
-      #   print(e)
-      #   with open("memory_log.txt", 'w') as f:
-      #     print(self.memory, file = f)
+
       self.deleteTempsFolder()
       with open("const_log.txt", 'w') as f:
         print(self.constantes, file = f)

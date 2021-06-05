@@ -1,1 +1,1 @@
-{'CTE_FLOAT': {}, 'CTE_INT': {'1': 3001}, 'CTE_BOOL': {}, 'CTE_FILE': {'NEWTEST.txt': 3000}, 'CTE_STRING': {}}
+{'CTE_FLOAT': {}, 'CTE_INT': {'5': 3003}, 'CTE_BOOL': {}, 'CTE_FILE': {'C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.txt': 3000, 'Archivo.txt': 3009}, 'CTE_STRING': {'': 3001, ' hola': 3002, 'FILE': 3004, '\\n': 3005, 'qwerty': 3006, 'q': 3007, '2345': 3008}}

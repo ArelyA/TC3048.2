@@ -1,52 +1,12 @@
 g = C:/Users/Arely/Desktop/TEC/Compiladores/tests/test.txt
 
-w = "" + "hola"
+w = "" + " hola" * 5
+
+print(w)
 
 f = g
 
-print(4 + 2, [1, 2, 6], not True)
+print("FILE", "\n", g)
 
-for b in range(5):
-	if b >= 3:
-		print("hola")
-	else:
-		print("adios")
-		c = b + 2
-		while c >= b:
-			print("c = ", c)
-			c = c - 1
-
-
-
-
-
-//print("FILE", "\n", g)
-# print(g + "STRING" + f)
-x = [99, 92, 96]
-
-for b in x:
-	print(b)
-
-def func():
-	a = b
-	b = 1
-	print(12345)
-	return x	
-a = b
-h = ((g + g) + "qwerty" - "q") - "2345"
-h.write(NEWTEST.txt)
-
-print(1, func())
-
-def funcB(int param1[2], string p):
-	//param1 = param1 + 1
-	if param1[0] == 1:
-		if param1[1] == 2:
-			return 1
-		else:
-			return 2
-	else:
-		return 3
-
-for b in x:
-	print(b)
+h = ((g + g) + "qwerty" - "q") - ("2345" + w)
+h.write(Archivo.txt)

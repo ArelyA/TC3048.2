@@ -74,5 +74,8 @@ class Memory(deque):
     else: raise MemoryError("Out of constants memory")
 
   def release(self, mem, temp):
+    """
+    Releases the function's active memory after use
+    """
     self.counterMem = mem
     self.counterTemp = temp + self.memSize

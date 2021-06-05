@@ -6,9 +6,11 @@
 	baseTempAddress: 0,
 	returnAddress: None,
 	signature: ,
-	sizeA: 2,
-	sizeT: 0,
-	vars: {'fileName':{type: ''CTE_FILE'', dims: , addr: 0},
-	       'str':{type: ''CTE_INT'', dims: , addr: 1}
+	sizeA: 4,
+	sizeT: 7,
+	vars: {'g':{type: ''CTE_FILE'', dims: , addr: 0},
+	       'w':{type: ''CTE_STRING'', dims: , addr: 1},
+	       'f':{type: ''CTE_FILE'', dims: , addr: 2},
+	       'h':{type: ''CTE_FILE'', dims: , addr: 3}
 	      }
 }

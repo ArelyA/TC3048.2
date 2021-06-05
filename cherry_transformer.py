@@ -802,10 +802,10 @@ class PassiveSyntax(Transformer):
       idAddr = self.compiler.addVar(idVal, itVar.getType())
       
       addr = self.expression_genQuad("=", self.compiler.addConst(0, 'CTE_INT'), "")
-      self.compiler.pushJump() # PARA GOTO
+      self.compiler.pushJump() 
       dim = itVar.getDimensions()[0]
       addrComp = self.expression_genQuad("<", addr, self.compiler.addConst(dim.sup, 'CTE_INT'))
-      self.compiler.pushJump() # PARA LLENARL GOTOF
+      self.compiler.pushJump() 
       self.compiler.addQuad("GOTOF", addrComp, "", "ENDFOR")
       arrElem = self.getElem(itVar, addr, dim.sup, dim.offset, context)
       self.compiler.addQuad("=", arrElem, "", idAddr)
@@ -1012,18 +1012,5 @@ class PassiveSyntax(Transformer):
     self.compiler.addQuad("READ", readType, "", readAddr)
     
     return ch
-  
-  # def append_func(self, ch, meta):
-  #   line = meta.line
-  #   # CREA NUEVA
 
-  # def get_line(self, ch, meta):
-  #   print("ENTRA")
-  #   print(ch, meta)
-  #   return ch
-
-  # def get_word(self, ch, meta):
-  #   print("ENTRA")
-  #   print(ch, meta)
-  #   return ch
 

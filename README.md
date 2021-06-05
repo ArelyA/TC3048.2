@@ -6,59 +6,67 @@ El proyecto fue redefinido. Se a establecido un scope más alcanzable y se está
 
 La declaración de variables se hará de forma automática; en cuanto estas reciban su valor (asignación) se definirá su tipo y se separará su identificador. Los tipos de datos que se manejarán serán: bool, int, float, string y file (extensión .txt). También se manejarán listas de cada uno de estos tipos. Las listas estarán limitadas a UNA dimensión.
 
-| Tipo       | Contenido                                                    |
-| ---------- | ------------------------------------------------------------ |
-| cte_bool   | True \| False                                                |
-| cte_int    | \d+                                                          |
-| cte_float  | \d+\\.d+                                                     |
-| cte_string | "[\d\w]*"                                                    |
-| cte_file   | (\.{0,2}\/){0,1}[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\.txt     |
-| list       | Acepta todos los tipos de dato anteriores. TBD en diagrama -> de 0 a n elementos entre brackets [] y separados por comas , |
+| Tipo                      | Contenido                                                    |
+| ------------------------- | ------------------------------------------------------------ |
+| CTE_BOOL                  | True \| False                                                |
+| CTE_INT                   | \d+                                                          |
+| CTE_FLOAT                 | \d+\\.d+                                                     |
+| CTE_STRING                | "[\d\w]*"                                                    |
+| CTE_FILE                  | (\.{0,2}\/){0,1}[\d\w\_\-]+[\d\w\_\-\/]*[\d\w\_\-]+\.txt     |
+| Arreglos unidimensionales | Acepta todos los tipos de dato anteriores.  [elem (, elem)*] |
 
 Las palabras reservadas consisten de los tipos de datos junto con los nombre de las funciones base. Los nombres de las funciones especiales también serán palabras reservadas, pero estarán descritos en otra tabla.
 
-| Variable    | Palabra reservada |
-| ----------- | ----------------- |
-| type_bool   | bool              |
-| type_int    | int               |
-| type_float  | float             |
-| type_string | string            |
-| type_file   | file              |
-| cond_if     | if                |
-| cond_else   | else              |
-| stmt_while  | while             |
-| stmt_for    | for               |
-| stmt_in     | in                |
-| func_print  | print             |
-| func_read   | read              |
-| stmt_def    | def               |
-| stmt_range  | range             |
-| func_len    | len               |
+| Palabra reservada |
+| ----------------- |
+| bool              |
+| int               |
+| float             |
+| string            |
+| file              |
+| if                |
+| else              |
+| while             |
+| for               |
+| in                |
+| print             |
+| read              |
+| def               |
+| range             |
+| len               |
+| write             |
+| range             |
+| getLine           |
+| getWord           |
+| append            |
+| clean             |
+| norm              |
+| join              |
+| create            |
+| delete            |
+| count             |
+| return            |
 
 Los tokens a considerar son los siguientes:
 
-| Token      | Contenido    |
-| ---------- | ------------ |
-| id         | [\w]+[\d\w]* |
-| sym_sum    | +            |
-| sym_sub    | -            |
-| sym_mult   | *            |
-| sym_div    | /            |
-| sym_and    | AND          |
-| sym_or     | OR           |
-| sym_less   | <            |
-| sym_great  | >            |
-| sym_not    | NOT          |
-| sym_eq     | ==           |
-| sym_asig   | =            |
-| sym_Lparen | (            |
-| sym_Rparen | )            |
-| sym_Lbrack | [            |
-| sym_Rbrack | ]            |
-| sym_dot    | .            |
-| sym_mod    | %            |
-| sym_comm   | #            |
-| sym_tab    | /t           |
+| Token         | Contenido                                            |
+| ------------- | ---------------------------------------------------- |
+| ID            | /[a-zA-Z_]\w*/                                       |
+| TERM_OPT      | * \| /                                               |
+| EXP_OPT       | + \| -                                               |
+| COMP_OPT      | >= \| <= \| == \| != \|< \| >                        |
+| NOT           | not                                                  |
+| EXPRESION_AND | and                                                  |
+| EXPRESION_OR  | or                                                   |
+| TYPE_OPT      | int \| float \| string \| file                       |
+| _NEWLINE      | /(\r?\n[\t ]*)+/                                     |
+| WHITESPACE    | /[\t \f]+/                                           |
+| INLINE        | /\\[\t \f]*\r?\n/                                    |
+| SH_COMMENT    | /#\[^\n\]*/                                          |
+| CPP_COMMENT   | /\/\/\[^\n\]*/                                       |
+| C_COMMENT     | "/*" /(.\|\n)*?/ "*/"                                |
+| _INDENT       | *vacío, utilizado para poder manejar la indentación* |
+| _DEDENT       | *vacío, utilizado para poder manejar la indentación* |
 
 Funciones especiales:
 

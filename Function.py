@@ -30,7 +30,13 @@ class Function(Table):
 
     addrTemp -> Int
 
-    signature -> ["varID"]
+    sizeA -> Int
+
+    sizeT -> Int
+
+    ip -> Int
+
+    signature -> [["varID", [Dimension]]]
 
     vars -> {"varId": Variable}
     """
@@ -41,7 +47,6 @@ class Function(Table):
     self.sizeA = 0
     self.sizeT = 0
     self.ip = 0
-    # self.const = {} # Dict
     super().__init__(funcId, addr)
 
   def __repr__(self):
